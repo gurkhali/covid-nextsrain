@@ -4,6 +4,13 @@ import operator
 import argparse
 import datetime
 
+# node value
+def node_value(key, node):
+        if key in node:
+            return node[key]['value']
+        else:
+            return None
+
 # class of sequence
 class Sequence:
     def __init__(self, name, date, parent):
@@ -11,6 +18,8 @@ class Sequence:
         self.parent = parent
         self.dateRaw = date
         self.mutation = False
+        self.country = None
+        self.region = None
         
         # convert date 
         s = str(date).split('.')
@@ -25,14 +34,24 @@ class Sequence:
 # add each of the nodes and children to a queue
 def add_node(node, parent, flat_list):
         name = node['name']
-        value = node['node_attrs']['num_date']['value']
+        value = node_value('num_date', node['node_attrs'])
         seq = Sequence(name, value, parent)
         
-        # set mutation value
+        # mutation 
         if 'branch_attrs' in node:
             if 'mutations' in node['branch_attrs']:
                 seq.mutation = len(node['branch_attrs']['mutations']) > 0
 
+        # region
+        seq.region = node_value('region', node)
+
+        # country
+        seq.country = node_value('country', node)
+
+        # originating_lab
+        seq.country = node_value('originating_lab', node)
+
+        # iterate children
         flat_list.append(seq)
         if 'children' in node:
             for c in node['children']:
