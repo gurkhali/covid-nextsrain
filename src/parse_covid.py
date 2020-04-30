@@ -20,6 +20,7 @@ class Sequence:
         self.mutation = False
         self.country = None
         self.region = None
+        self.div = 0
         
         # convert date 
         s = str(date).split('.')
@@ -42,11 +43,15 @@ def add_node(node, parent, flat_list):
             if 'mutations' in node['branch_attrs']:
                 seq.mutation = len(node['branch_attrs']['mutations']) > 0
 
+        # divergence
+        if 'div' in node['node_attrs']:
+            seq.divergence = node['node_attrs']['div']
+
         # region
-        seq.region = node_value('region', node)
+        seq.region = node_value('region', node['node_attrs'])
 
         # country
-        seq.country = node_value('country', node)
+        seq.country = node_value('country', node['node_attrs'])
 
         # originating_lab
         seq.country = node_value('originating_lab', node)
