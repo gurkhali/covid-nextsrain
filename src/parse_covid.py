@@ -3,6 +3,7 @@ import csv
 import operator
 import argparse
 import datetime
+import pprint
 
 # node value
 def node_value(key, node):
@@ -17,9 +18,12 @@ class Sequence:
         self.name = name
         self.parent = parent
         self.dateRaw = date
-        self.mutation = False
+        self.mutations = False
         self.country = None
+        self.originating_lab = None
         self.region = None
+        self.mutations_protein = False
+        self.mutations_rna = False
         self.div = 0
         
         # convert date 
@@ -29,8 +33,9 @@ class Sequence:
         self.epocTime = self.date.strftime("%s")
 
     def __str__(self):
-        return("{0},{1},{2},{3},{4}".format(self.date, 
-            self.parent, self.name, self.parent, self.mutation))
+        return str(self.__dict__)
+        #return("{0},{1},{2},{3},{4}".format(self.date, 
+        #    self.parent, self.name, self.parent, self.mutations))
 
 # add each of the nodes and children to a queue
 def add_node(node, parent, flat_list):
@@ -38,11 +43,18 @@ def add_node(node, parent, flat_list):
         value = node_value('num_date', node['node_attrs'])
         seq = Sequence(name, value, parent)
         
-        # mutation 
+        # mutations 
         if 'branch_attrs' in node:
             if 'mutations' in node['branch_attrs']:
-                seq.mutation = len(node['branch_attrs']['mutations']) > 0
-
+                seq.mutations = len(node['branch_attrs']['mutations'])
+                if seq.mutations > 0:
+                    # amino mutations
+                    if 'nuc' in node['branch_attrs']['mutations']:
+                        seq.mutations_protein = True
+                    
+                    # rna mutations
+                    if seq.mutations > 1 or (not seq.mutations_protein):
+                        seq.mutations_rna = True
         # divergence
         if 'div' in node['node_attrs']:
             seq.divergence = node['node_attrs']['div']
@@ -54,7 +66,7 @@ def add_node(node, parent, flat_list):
         seq.country = node_value('country', node['node_attrs'])
 
         # originating_lab
-        seq.country = node_value('originating_lab', node)
+        seq.originating_lab = node_value('originating_lab', node['node_attrs'])
 
         # iterate children
         flat_list.append(seq)
@@ -78,5 +90,6 @@ add_node(data['tree'], "root", flat_list)
 
 flat_list.sort(key=lambda x: x.epocTime, reverse=False)
 for f in flat_list:
+    #pprint.PrettyPrinter(indent=1, depth=1).pprint(f)
     print (f)
 
