@@ -4,6 +4,7 @@ import operator
 import argparse
 import datetime
 import pprint
+import json
 
 # constants
 NUM_PARENTS = 10 #number of parents to track
@@ -16,6 +17,12 @@ def node_value(key, node):
         else:
             return None
 
+class Geo:
+    def __init__(self, name, lo, la):
+        self.name = name
+        self.lo = lo
+        self.la = la
+
 # class of sequence
 class Sequence:
     def __init__(self, name, date, parent):
@@ -24,6 +31,7 @@ class Sequence:
         self.mutations = False
         self.country = None
         self.originating_lab = None
+        self.submitting_lab = None
         self.region = None
         self.mutations_protein = False
         self.mutations_rna = False
@@ -32,11 +40,13 @@ class Sequence:
         self.date = 0
         self.epocTime = 0
         self.generation = 0
+        self.claude = None
+        self.location = None
 
         # set lineage
         self.parents = [NUM_PARENTS]
         
-        # generation         
+        # generation info       
         if parent:
             self.generation = parent.generation + 1
             self.parents = [parent] + parent.parents
@@ -54,6 +64,18 @@ class Sequence:
         #return str(self.__dict__)
         return("{0},{1},{2},{3},{4}".format(self.date, 
             self.parents[0].name, self.name, self.mutations, self.generation))
+
+def add_geo(location, values):
+    ret = {}
+    for l in values :
+        if l['key'] != location:
+            continue
+    if l:
+        for (k, v) in l['demes'].items():
+            print (k)
+            print (v)
+            ret.update({k: Geo(k, v['longitude'], v['latitude'])})
+    return ret
 
 # add each of the nodes and children to a queue
 def add_node(node, parent, flat_list):
@@ -77,14 +99,23 @@ def add_node(node, parent, flat_list):
         if 'div' in node['node_attrs']:
             seq.divergence = node['node_attrs']['div']
 
+        # claude
+        seq.claude = node_value('claude_membership', node['node_attrs'])
+
         # region
         seq.region = node_value('region', node['node_attrs'])
+
+        # location
+        seq.location = node_value('location', node['node_attrs'])
 
         # country
         seq.country = node_value('country', node['node_attrs'])
 
         # originating_lab
         seq.originating_lab = node_value('originating_lab', node['node_attrs'])
+
+        # submittinh lab
+        seq.submitting_lab = node_value('submitting_lab', node['node_attrs'])
 
         # iterate children
         flat_list.append(seq)
@@ -98,6 +129,8 @@ parser.add_argument('--file', nargs='?', default = "../data/sample.json",
 args = parser.parse_args()
 
 flat_list = []
+region_geo = {}
+country_gep = {}
 
 
 # root node
@@ -106,7 +139,11 @@ root = Sequence("root", None, None)
 with open(args.file) as json_file: 
     data = json.load(json_file) 
 
+# add geo
+region_geo = add_geo('region', data['meta']['geo_resolutions'])
+country_geo = add_geo('country', data['meta']['geo_resolutions'])
 
+# genome nodes
 add_node(data['tree'], root, flat_list)
 
 flat_list.sort(key=lambda x: x.epocTime, reverse=False)
