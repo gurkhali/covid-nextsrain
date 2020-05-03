@@ -42,9 +42,11 @@ class Sequence:
         self.generation = 0
         self.claude = None
         self.location = None
+        self.gisaid = None
 
         # set lineage
         self.parents = [NUM_PARENTS]
+        self.childrens = []
         
         # generation info       
         if parent:
@@ -52,7 +54,7 @@ class Sequence:
             self.parents = [parent] + parent.parents
         else:
             self.parents = [parent]
-
+ 
         if date: 
             # convert date 
             s = str(date).split('.')
@@ -72,8 +74,6 @@ def add_geo(location, values):
             continue
     if l:
         for (k, v) in l['demes'].items():
-            print (k)
-            print (v)
             ret.update({k: Geo(k, v['longitude'], v['latitude'])})
     return ret
 
@@ -95,6 +95,9 @@ def add_node(node, parent, flat_list):
                     # rna mutations
                     if seq.mutations > 1 or (not seq.mutations_protein):
                         seq.mutations_rna = True
+
+        seq.gisaid = node_value('num_date', node['node_attrs'])
+
         # divergence
         if 'div' in node['node_attrs']:
             seq.divergence = node['node_attrs']['div']
@@ -121,7 +124,9 @@ def add_node(node, parent, flat_list):
         flat_list.append(seq)
         if 'children' in node:
             for c in node['children']:
-                add_node(c, seq, flat_list)
+                seq.childrens.append(add_node(c, seq, flat_list))
+
+        return seq
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--file', nargs='?', default = "../data/sample.json",
