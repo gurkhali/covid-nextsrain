@@ -25,35 +25,42 @@ class Geo:
 
 # class of sequence
 class Sequence:
-    def __init__(self, name, date, parent):
+    def __init__(self, name, date, parent, gisaid):
         self.name = name
         self.dateRaw = date
-        self.mutations = False
         self.country = None
         self.originating_lab = None
         self.submitting_lab = None
         self.region = None
-        self.mutations_protein = False
-        self.mutations_rna = False
-        self.div = 0
-        self.generartion = 1
+        self.divergence = 0
         self.date = 0
         self.epocTime = 0
-        self.generation = 0
         self.claude = None
         self.location = None
-        self.gisaid = None
+        self.gisaid = gisaid
 
         # set lineage
-        self.parents = [NUM_PARENTS]
+        self.parents = []
         self.childrens = []
         
         # generation info       
         if parent:
-            self.generation = parent.generation + 1
             self.parents = [parent] + parent.parents
+            self.mutations = parent.mutations[:]
+
+            print (parent.generation)
+            self.generation = parent.generation
+            if gisaid != None: 
+                self.generation = self.generation + 1
+                print ("yep " + gisaid + " " + str(len(self.parents)))
+            else:
+                print ("nope")
+
         else:
+            print("no parent")
             self.parents = [parent]
+            self.mutations = []
+            self.generation = 1
  
         if date: 
             # convert date 
@@ -64,8 +71,10 @@ class Sequence:
 
     def __str__(self):
         #return str(self.__dict__)
-        return("{0},{1},{2},{3},{4}".format(self.date, 
-            self.parents[0].name, self.name, self.mutations, self.generation))
+        return("{0}, {1}, {2}, {3}, mutations {4}, div {5}, {6}".format(
+            self.date, 
+            self.parents[0].name, self.name, self.gisaid, 
+            len(self.mutations), self.divergence, self.generation))
 
 def add_geo(location, values):
     ret = {}
@@ -81,22 +90,16 @@ def add_geo(location, values):
 def add_node(node, parent, flat_list):
         name = node['name']
         value = node_value('num_date', node['node_attrs'])
-        seq = Sequence(name, value, parent)
+        gisaid = node_value('gisaid_epi_isl', node['node_attrs'])
+        seq = Sequence(name, value, parent, gisaid)
         
         # mutations 
         if 'branch_attrs' in node:
             if 'mutations' in node['branch_attrs']:
-                seq.mutations = len(node['branch_attrs']['mutations'])
-                if seq.mutations > 0:
-                    # amino mutations
-                    if 'nuc' in node['branch_attrs']['mutations']:
-                        seq.mutations_protein = True
-                    
-                    # rna mutations
-                    if seq.mutations > 1 or (not seq.mutations_protein):
-                        seq.mutations_rna = True
+                if len(node['branch_attrs']['mutations']):
+                    seq.mutations.append(node['branch_attrs']['mutations'])
 
-        seq.gisaid = node_value('num_date', node['node_attrs'])
+        seq.gisaid = node_value('gisaid_epi_isl', node['node_attrs'])
 
         # divergence
         if 'div' in node['node_attrs']:
@@ -139,7 +142,7 @@ country_gep = {}
 
 
 # root node
-root = Sequence("root", None, None)
+root = Sequence("root", None, None, None)
 
 with open(args.file) as json_file: 
     data = json.load(json_file) 
@@ -154,5 +157,6 @@ add_node(data['tree'], root, flat_list)
 flat_list.sort(key=lambda x: x.epocTime, reverse=False)
 for f in flat_list:
     #pprint.PrettyPrinter(indent=1, depth=1).pprint(f)
+    #    if f.gisaid != None:
     print (f)
 
