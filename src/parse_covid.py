@@ -9,7 +9,6 @@ import json
 # constants
 NUM_PARENTS = 10 #number of parents to track
 
-
 # node value
 def node_value(key, node):
         if key in node:
