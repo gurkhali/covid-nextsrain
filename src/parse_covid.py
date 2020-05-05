@@ -8,6 +8,7 @@ import json
 
 # constants
 NUM_PARENTS = 10 #number of parents to track
+CSV_FORMAT = ["epocTime", "name"]
 
 # node value
 def node_value(key, node):
@@ -24,16 +25,6 @@ class Geo:
 
 # class of sequence
 class Sequence:
-
-    # return parents gisaid
-    def get_parents_gisid(self, num):
-        parents = [num]
-        for i in range (0, min(num, len(self.parents))):
-            if self.parents[i]:
-                parents.append(self.parents[i].name)
-
-        return parents
-
     def __init__(self, name, date, parent, gisaid):
         self.name = name
         self.dateRaw = date
@@ -49,6 +40,8 @@ class Sequence:
         self.gisaid = gisaid
         self.mutations = []
         self.generation = 1
+        self.age = None
+        self.sex = None
 
         # set lineage
         self.parents = []
@@ -58,8 +51,7 @@ class Sequence:
         if parent:
             self.parents = [parent] + parent.parents[:]
             self.mutations = parent.mutations[:]
-            self.generation = parent.generation
-            self.generation = self.generation + 1
+            self.generation = parent.generation + 1
  
         if date: 
             # convert date 
@@ -75,10 +67,34 @@ class Sequence:
             pn = self.parents[0].name
         else:
             pn = ""
-        return("{0}, {1}, {2}, {3}, mutations {4}, div {5}, {6}".format(
+        return("{0}, {1}, {2}, {3}, mutations {4}, div {5}, "\
+                "generations {6} {7}".format(
             self.date, 
             pn, self.name, self.gisaid, 
-            len(self.mutations), self.divergence, parents))
+            len(self.mutations), self.divergence, self.generation, parents))
+
+    # return parents gisaid
+    def get_parents_gisid(self, num):
+        parents = [num]
+        for i in range (0, min(num, len(self.parents))):
+            if self.parents[i]:
+                parents.append(self.parents[i].name)
+
+        return parents
+
+    # conver object to list type based on format
+    def to_list(self, format=CSV_FORMAT):
+        ret = []
+        
+        for f in format:
+            try:
+                v = getattr(self, f)         
+            except AttributeError:
+                ret.append(None)
+            else:
+                ret.append(v)
+        return ret
+            
 
 def add_geo(location, values):
     ret = {}
@@ -108,6 +124,12 @@ def add_node(node, parent, flat_list):
         # divergence
         if 'div' in node['node_attrs']:
             seq.divergence = node['node_attrs']['div']
+
+        # age
+        seq.age =  node_value('age', node['node_attrs'])
+
+        # sex
+        seq.sex = node_value('sex', node['node_attrs'])
 
         # claude
         seq.claude = node_value('claude_membership', node['node_attrs'])
@@ -163,5 +185,6 @@ flat_list.sort(key=lambda x: x.epocTime, reverse=False)
 for f in flat_list:
     #pprint.PrettyPrinter(indent=1, depth=1).pprint(f)
     #    if f.gisaid != None:
-    print (f)
+    #print (f)
+    print (f.to_list())
 
