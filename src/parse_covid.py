@@ -24,6 +24,16 @@ class Geo:
 
 # class of sequence
 class Sequence:
+
+    # return parents gisaid
+    def get_parents_gisid(self, num):
+        parents = [num]
+        for i in range (0, min(num, len(self.parents))):
+            if self.parents[i]:
+                parents.append(self.parents[i].name)
+
+        return parents
+
     def __init__(self, name, date, parent, gisaid):
         self.name = name
         self.dateRaw = date
@@ -37,29 +47,19 @@ class Sequence:
         self.claude = None
         self.location = None
         self.gisaid = gisaid
+        self.mutations = []
+        self.generation = 1
 
         # set lineage
         self.parents = []
         self.childrens = []
-        
-        # generation info       
+
+        # set inherited info       
         if parent:
-            self.parents = [parent] + parent.parents
+            self.parents = [parent] + parent.parents[:]
             self.mutations = parent.mutations[:]
-
-            print (parent.generation)
             self.generation = parent.generation
-            if gisaid != None: 
-                self.generation = self.generation + 1
-                print ("yep " + gisaid + " " + str(len(self.parents)))
-            else:
-                print ("nope")
-
-        else:
-            print("no parent")
-            self.parents = [parent]
-            self.mutations = []
-            self.generation = 1
+            self.generation = self.generation + 1
  
         if date: 
             # convert date 
@@ -70,10 +70,15 @@ class Sequence:
 
     def __str__(self):
         #return str(self.__dict__)
+        parents = str(self.get_parents_gisid(NUM_PARENTS))
+        if self.parents and self.parents[0]:
+            pn = self.parents[0].name
+        else:
+            pn = ""
         return("{0}, {1}, {2}, {3}, mutations {4}, div {5}, {6}".format(
             self.date, 
-            self.parents[0].name, self.name, self.gisaid, 
-            len(self.mutations), self.divergence, self.generation))
+            pn, self.name, self.gisaid, 
+            len(self.mutations), self.divergence, parents))
 
 def add_geo(location, values):
     ret = {}
@@ -90,6 +95,8 @@ def add_node(node, parent, flat_list):
         name = node['name']
         value = node_value('num_date', node['node_attrs'])
         gisaid = node_value('gisaid_epi_isl', node['node_attrs'])
+
+        # sequence object
         seq = Sequence(name, value, parent, gisaid)
         
         # mutations 
@@ -97,8 +104,6 @@ def add_node(node, parent, flat_list):
             if 'mutations' in node['branch_attrs']:
                 if len(node['branch_attrs']['mutations']):
                     seq.mutations.append(node['branch_attrs']['mutations'])
-
-        seq.gisaid = node_value('gisaid_epi_isl', node['node_attrs'])
 
         # divergence
         if 'div' in node['node_attrs']:
@@ -124,6 +129,7 @@ def add_node(node, parent, flat_list):
 
         # iterate children
         flat_list.append(seq)
+      
         if 'children' in node:
             for c in node['children']:
                 seq.childrens.append(add_node(c, seq, flat_list))
@@ -131,7 +137,7 @@ def add_node(node, parent, flat_list):
         return seq
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--file', nargs='?', default = "../data/sample.json",
+parser.add_argument('--file', nargs='?', default = "/home/ubuntu/covid/data/covid.json",
                    help='covid input file name')
 args = parser.parse_args()
 
