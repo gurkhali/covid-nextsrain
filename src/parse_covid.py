@@ -8,7 +8,8 @@ import json
 
 # constants
 NUM_PARENTS = 10 #number of parents to track
-CSV_FORMAT = ["epocTime", "name"]
+OUT_FORMAT = ["epocTime", "gisaid", "name", "division", "country", "region", 
+        "mutations"]
 
 # node value
 def node_value(key, node):
@@ -29,6 +30,7 @@ class Sequence:
         self.name = name
         self.dateRaw = date
         self.country = None
+        self.division = None
         self.originating_lab = None
         self.submitting_lab = None
         self.region = None
@@ -82,13 +84,26 @@ class Sequence:
 
         return parents
 
+    # special handlers
+    def to_list_mutations(self):
+        if len(self.mutations):
+            ret = 1
+        else:
+            ret = 0
+        return ret
+
     # conver object to list type based on format
-    def to_list(self, format=CSV_FORMAT):
+    def to_list(self, format=OUT_FORMAT):
         ret = []
         
         for f in format:
             try:
-                v = getattr(self, f)         
+                # handle mutations differently
+                if f == "mutations":
+                    v = self.to_list_mutations()
+                else:
+                    v = getattr(self, f)         
+
             except AttributeError:
                 ret.append(None)
             else:
@@ -143,6 +158,9 @@ def add_node(node, parent, flat_list):
         # country
         seq.country = node_value('country', node['node_attrs'])
 
+        # division
+        seq.division = node_value('division', node['node_attrs'])
+
         # originating_lab
         seq.originating_lab = node_value('originating_lab', node['node_attrs'])
 
@@ -158,9 +176,26 @@ def add_node(node, parent, flat_list):
 
         return seq
 
+def write_csv(out_file, headers, output):
+    f = open(out_file, 'w')
+    writer = csv.writer(f, delimiter=' ', doublequote=True,
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    
+    writer.writerow(headers)
+    for o in output:
+        # skip if not a sample
+        if not o.gisaid:
+            continue
+        output = o.to_list()
+        writer.writerow(output)
+
 parser = argparse.ArgumentParser()
-parser.add_argument('--file', nargs='?', default = "/home/ubuntu/covid/data/covid.json",
-                   help='covid input file name')
+parser.add_argument('--file', nargs='?', 
+        default = "/home/ubuntu/covid/data/covid.json",
+        help='covid input file name')
+parser.add_argument('--outfile', nargs='?', 
+        default = "/home/ubuntu/covid/output/data.csv",
+        help='covid output file name')
 args = parser.parse_args()
 
 flat_list = []
@@ -183,8 +218,7 @@ add_node(data['tree'], root, flat_list)
 
 flat_list.sort(key=lambda x: x.epocTime, reverse=False)
 for f in flat_list:
-    #pprint.PrettyPrinter(indent=1, depth=1).pprint(f)
-    #    if f.gisaid != None:
-    #print (f)
-    print (f.to_list())
+    output = f.to_list()
+#    print (output)
 
+write_csv(args.outfile, OUT_FORMAT, flat_list)
