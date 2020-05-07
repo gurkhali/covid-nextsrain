@@ -178,7 +178,7 @@ def add_node(node, parent, flat_list):
 
 def write_csv(out_file, headers, output):
     f = open(out_file, 'w')
-    writer = csv.writer(f, delimiter=' ', doublequote=True,
+    writer = csv.writer(f, delimiter=',', doublequote=True,
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
     
     writer.writerow(headers)
