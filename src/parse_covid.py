@@ -60,7 +60,7 @@ class Sequence:
             s = str(date).split('.')
             td = datetime.timedelta(days = 365 * float('0.' + s[1]))
             self.date = datetime.date(year=int(s[0]), month=1, day=1) + td
-            self.epocTime = self.date.strftime("%s")
+            self.epocTime = self.date.strftime("%s") + "000000000"
 
     def __str__(self):
         #return str(self.__dict__)
