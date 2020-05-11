@@ -9,7 +9,7 @@ import json
 # constants
 NUM_PARENTS = 10 #number of parents to track
 OUT_FORMAT = ["epocTime", "gisaid", "name", "division", "country", "region", 
-        "mutations"]
+        "mutations", "divergence"]
 
 # node value
 def node_value(key, node):
@@ -95,6 +95,7 @@ class Sequence:
     # conver object to list type based on format
     def to_list(self, format=OUT_FORMAT):
         ret = []
+        excludes = ['name', 'mutations', 'divergence']
         
         for f in format:
             try:
@@ -103,6 +104,9 @@ class Sequence:
                     v = self.to_list_mutations()
                 else:
                     v = getattr(self, f)         
+                    if f not in excludes and v:
+                        v = v.replace(' ', '-')
+                # strip spa
 
             except AttributeError:
                 ret.append(None)
