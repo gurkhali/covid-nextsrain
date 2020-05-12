@@ -44,6 +44,7 @@ class Sequence:
         self.generation = 1
         self.age = None
         self.sex = None
+        self.node = None
 
         # set lineage
         self.parents = []
@@ -52,7 +53,6 @@ class Sequence:
         # set inherited info       
         if parent:
             self.parents = [parent] + parent.parents[:]
-            self.mutations = parent.mutations[:]
             self.generation = parent.generation + 1
  
         if date: 
@@ -115,8 +115,7 @@ class Sequence:
         return ret
             
 
-def add_geo(location, values):
-    ret = {}
+def add_geo(location, values, ret):
     for l in values :
         if l['key'] != location:
             continue
@@ -125,60 +124,106 @@ def add_geo(location, values):
             ret.update({k: Geo(k, v['longitude'], v['latitude'])})
     return ret
 
+def get_mutations(node):
+    if 'branch_attrs' in node and 'mutations' in node['branch_attrs'] and len(
+            node['branch_attrs']['mutations']):
+        return node['branch_attrs']['mutations']
+    else:
+        return None
+       
+def add_branch_node(node, parent, flat_list, mutations):
+    children = []
+
+    # append mutations if present
+    m = get_mutations(node)
+    if m:
+        mutations.append(m)
+
+    # cant have empty children
+    if not 'children' in node:
+        raise NameError("### Empty Children")
+
+    for c in node['children']:
+        childs = add_node(c, parent, flat_list)
+        for c in childs:
+            if len(mutations) > 0: 
+                c.mutations.append(mutations)
+            children.append(c)
+
+    return children
+
+def has_leafs(node):
+    if 'children' in node:
+        for c in node['children']:
+            if (node_value('gisaid_epi_isl',  c['node_attrs'])):
+                return True
+
+    return False
+
 # add each of the nodes and children to a queue
 def add_node(node, parent, flat_list):
-        name = node['name']
-        value = node_value('num_date', node['node_attrs'])
-        gisaid = node_value('gisaid_epi_isl', node['node_attrs'])
+    name = node['name']
+    value = node_value('num_date', node['node_attrs'])
+    gisaid = node_value('gisaid_epi_isl', node['node_attrs'])
 
-        # sequence object
-        seq = Sequence(name, value, parent, gisaid)
-        
-        # mutations 
-        if 'branch_attrs' in node:
-            if 'mutations' in node['branch_attrs']:
-                if len(node['branch_attrs']['mutations']):
-                    seq.mutations.append(node['branch_attrs']['mutations'])
+    # 
+    # Check if its a branch node; skip the branches
+    # 
+    if not gisaid and not has_leafs(node):
+        return add_branch_node(node, parent, flat_list, [])
 
-        # divergence
-        if 'div' in node['node_attrs']:
-            seq.divergence = node['node_attrs']['div']
+    # sequence object
+    seq = Sequence(name, value, parent, gisaid)
+    
+    # mutations 
+    m = get_mutations(node)
+    if m:
+        seq.mutations.append(m)
 
-        # age
-        seq.age =  node_value('age', node['node_attrs'])
+    # divergence
+    if 'div' in node['node_attrs']:
+        seq.divergence = node['node_attrs']['div']
 
-        # sex
-        seq.sex = node_value('sex', node['node_attrs'])
+    # node 
+    seq.node = node
 
-        # claude
-        seq.claude = node_value('claude_membership', node['node_attrs'])
+    # age
+    seq.age =  node_value('age', node['node_attrs'])
 
-        # region
-        seq.region = node_value('region', node['node_attrs'])
+    # sex
+    seq.sex = node_value('sex', node['node_attrs'])
 
-        # location
-        seq.location = node_value('location', node['node_attrs'])
+    # claude
+    seq.claude = node_value('claude_membership', node['node_attrs'])
 
-        # country
-        seq.country = node_value('country', node['node_attrs'])
+    # region
+    seq.region = node_value('region', node['node_attrs'])
 
-        # division
-        seq.division = node_value('division', node['node_attrs'])
+    # location
+    seq.location = node_value('location', node['node_attrs'])
 
-        # originating_lab
-        seq.originating_lab = node_value('originating_lab', node['node_attrs'])
+    # country
+    seq.country = node_value('country', node['node_attrs'])
 
-        # submittinh lab
-        seq.submitting_lab = node_value('submitting_lab', node['node_attrs'])
+    # division
+    seq.division = node_value('division', node['node_attrs'])
 
-        # iterate children
-        flat_list.append(seq)
-      
-        if 'children' in node:
-            for c in node['children']:
-                seq.childrens.append(add_node(c, seq, flat_list))
+    # originating_lab
+    seq.originating_lab = node_value('originating_lab', node['node_attrs'])
 
-        return seq
+    # submittinh lab
+    seq.submitting_lab = node_value('submitting_lab', node['node_attrs'])
+
+    # iterate children
+    flat_list.append(seq)
+  
+    if 'children' in node:
+        for c in node['children']:
+            nodes = add_node(c, seq, flat_list)
+            for n in nodes:
+                seq.childrens.append(n)
+
+    return [seq]
 
 def write_csv(out_file, headers, output):
     f = open(out_file, 'w')
@@ -193,6 +238,40 @@ def write_csv(out_file, headers, output):
         output = o.to_list()
         writer.writerow(output)
 
+# build timeline
+def parse_json(file_name, flat_list, region_geo, country_geo):
+    print (file_name)
+    # root node
+    root = Sequence("root", None, None, None)
+
+    with open(file_name) as json_file: 
+        data = json.load(json_file) 
+
+    # add region geo
+    add_geo('region', data['meta']['geo_resolutions'], 
+            region_geo)
+    # add country geo
+    add_geo('country', data['meta']['geo_resolutions'], 
+            country_geo)
+
+    # genome nodem
+    add_node(data['tree'], root, flat_list)
+
+# define a main function
+def main(args):
+    flat_list = []
+    region_geo = {}
+    country_geo = {}
+
+
+    # parse the json file
+    parse_json(args.file, flat_list, region_geo, country_geo)
+
+    # write out data
+    write_csv(args.outfile, OUT_FORMAT, flat_list)
+
+
+# # # # # # # # # # # # 
 parser = argparse.ArgumentParser()
 parser.add_argument('--file', nargs='?', 
         default = "/home/ubuntu/covid/data/covid.json",
@@ -202,27 +281,5 @@ parser.add_argument('--outfile', nargs='?',
         help='covid output file name')
 args = parser.parse_args()
 
-flat_list = []
-region_geo = {}
-country_gep = {}
-
-
-# root node
-root = Sequence("root", None, None, None)
-
-with open(args.file) as json_file: 
-    data = json.load(json_file) 
-
-# add geo
-region_geo = add_geo('region', data['meta']['geo_resolutions'])
-country_geo = add_geo('country', data['meta']['geo_resolutions'])
-
-# genome nodes
-add_node(data['tree'], root, flat_list)
-
-flat_list.sort(key=lambda x: x.epocTime, reverse=False)
-for f in flat_list:
-    output = f.to_list()
-#    print (output)
-
-write_csv(args.outfile, OUT_FORMAT, flat_list)
+# call main function
+main(args)
