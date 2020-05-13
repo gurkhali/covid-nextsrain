@@ -65,6 +65,8 @@ class Branch:
         
         self.sequences = []
         self.mutations = []
+        self.date = None
+
         if node:
             self.name = node['name']
         else:
@@ -131,19 +133,27 @@ class Branch:
         # submittinh lab
         seq.submitting_lab = node_value('submitting_lab', node['node_attrs'])
 
+        # set branch name
+        seq.branch = self
+
         self.sequences.append(seq)
 
         return seq
 
     def __str__(self):
-        ret = "{0}, {1}, {2}, {3}, # sequences {4}".format(
-            self.date, self.parent, self.name, len(self.sequences))
+        if self.date:
+            date = self.date
+        else:
+            date = ""
+
+        ret = "{0}, {1}, {2}, {3}".format(
+            date, self.parent, self.name, len(self.sequences))
         
         for s in self.sequences:
             ret = ret + "\t{1}\n".format(str(s))
 
-        for c in self.branches:
-            ret = ret + "\t{1}\n".format(c.name)
+        for b in self.branches:
+            ret = ret + "\t{1}\n".format(b.name)
 
         return (ret)
 
@@ -166,6 +176,7 @@ class Sequence:
         self.age = None
         self.sex = None
         self.node = None
+        self.branch = None
 
         if not date:
             raise NameError("### Empty date for sequence")
@@ -253,6 +264,7 @@ def add_branch_node(node, parent, flat_list):
     # walk non leaf branches
     for n in branch_nodes:
         add_branch_node(n, branch, flat_list)
+    return
 
 def write_csv(out_file, headers, output):
     f = open(out_file, 'w')
@@ -285,8 +297,9 @@ def parse_json(file_name, flat_list, region_geo, country_geo):
 
     # genome nodem
     add_branch_node(data['tree'], root, flat_list)
-    
+     
     return root
+
 
 # define a main function
 def main(args):
@@ -294,13 +307,11 @@ def main(args):
     region_geo = {}
     country_geo = {}
 
-
     # parse the json file
     root = parse_json(args.file, flat_list, region_geo, country_geo)
 
     # write out data
     write_csv(args.outfile, OUT_FORMAT, flat_list)
-
 
 # # # # # # # # # # # # 
 parser = argparse.ArgumentParser()
