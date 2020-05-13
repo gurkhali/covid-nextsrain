@@ -6,10 +6,19 @@ import datetime
 import pprint
 import json
 
+# branch id generator
+unique_id = 0
+
 # constants
 NUM_PARENTS = 10 #number of parents to track
 OUT_FORMAT = ["epocTime", "gisaid", "name", "division", "country", "region", 
         "mutations", "divergence"]
+
+def get_next_id(prefix):
+    global unique_id
+    unique_id = unique_id + 1
+
+    return ("{0}_{1}".format(prefix, str(unique_id)))
 
 def get_mutations(node):
     if 'branch_attrs' in node and 'mutations' in node['branch_attrs'] and len(
@@ -39,13 +48,6 @@ def is_leaf(node):
         return True
     return False
 
-#def has_child_leafs(node):
-#    if 'children' in node:
-#        for n in node['children']:
-#            return is_leaf(n)  
-#
-#       n   n    return False
-
 def has_leaf_mutation(node):
     if 'children' in node:
         for n in node['children']:
@@ -61,6 +63,7 @@ class Geo:
 
 class Branch:
     def __init__(self, node, parent):
+
         self.generation = 1
         
         self.sequences = []
@@ -76,6 +79,9 @@ class Branch:
         self.parent = parent
         self.branches = []
         self.node = node
+
+        # unique id
+        self.id = get_next_id("BR")
 
         # date
         if node:
@@ -179,7 +185,7 @@ class Sequence:
         self.branch = None
 
         if not date:
-            raise NameError("### Empty date for sequence")
+            raise NameError("### Empty date for sequences")
         
         self.date, self.epocTime = get_dates(date)
 
@@ -187,6 +193,21 @@ class Sequence:
         return("{0}, {1}, {2}, {3}, {4}, div {5}, "\
                 "generations {6} {7}".format(
             self.date, self.parent, self.name, self.gisaid, self.division))
+
+    def get_siblings(self):
+        ret = []
+        sequences = self.branch.sequences
+        for s in sequences:
+            ret.append(s.gisaid)
+        return ret
+
+    def get_parents(self):
+        ret = []
+        parent = self.branch
+        while parent:
+            ret.append(parent.id)
+            parent = parent.parent
+        return ret
 
     # special handlers
     def to_list_mutations(self):
@@ -312,6 +333,13 @@ def main(args):
 
     # write out data
     write_csv(args.outfile, OUT_FORMAT, flat_list)
+
+    count = 10
+    for i in flat_list:
+        parents = i.get_parents()
+        siblings = i.get_siblings()
+        print("{0}: \n\t{1}, \n\t{2}\n".format(i.gisaid, 
+            str(parents), str(siblings)))
 
 # # # # # # # # # # # # 
 parser = argparse.ArgumentParser()
