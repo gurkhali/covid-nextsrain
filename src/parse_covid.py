@@ -11,6 +11,22 @@ NUM_PARENTS = 10 #number of parents to track
 OUT_FORMAT = ["epocTime", "gisaid", "name", "division", "country", "region", 
         "mutations", "divergence"]
 
+def get_mutations(node):
+    if 'branch_attrs' in node and 'mutations' in node['branch_attrs'] and len(
+            node['branch_attrs']['mutations']):
+        return node['branch_attrs']['mutations']
+    else:
+        return None
+
+def get_dates(date):
+    # convert date 
+    s = str(date).split('.')
+    td = datetime.timedelta(days = 365 * float('0.' + s[1]))
+    date = datetime.date(year=int(s[0]), month=1, day=1) + td
+    epocTime = date.strftime("%s") + "000000000"
+
+    return date, epocTime
+
 # node value
 def node_value(key, node):
         if key in node:
@@ -18,13 +34,119 @@ def node_value(key, node):
         else:
             return None
 
+def is_leaf(node):
+    if (node_value('gisaid_epi_isl', node['node_attrs'])):
+        return True
+    return False
+
+#def has_child_leafs(node):
+#    if 'children' in node:
+#        for n in node['children']:
+#            return is_leaf(n)  
+#
+#       n   n    return False
+
+def has_leaf_mutation(node):
+    if 'children' in node:
+        for n in node['children']:
+            if is_leaf(n) and get_mutations(n):
+                return True
+    return False
+
 class Geo:
     def __init__(self, name, lo, la):
         self.name = name
         self.lo = lo
         self.la = la
 
-# class of sequence
+class Branch:
+    def __init__(self, node, parent):
+        self.generation = 1
+        
+        self.sequences = []
+        self.mutations = []
+        if node:
+            self.name = node['name']
+        else:
+            self.name = "root"
+
+         # set lineage
+        self.parent = parent
+        self.branches = []
+        self.node = node
+
+        # date
+        if node:
+            self.date, self.epocTime = get_dates(node_value('num_date', 
+            node['node_attrs']))
+
+    def add_sequence(self, node):
+        name = node['name']
+        date = node_value('num_date', node['node_attrs'])
+        gisaid = node_value('gisaid_epi_isl', node['node_attrs'])
+
+        if not gisaid:
+            raise NameError("### Invalid Sequence")
+
+        # sequence object
+        seq = Sequence(name, date, self, gisaid)
+        
+        # transfer and add mutations 
+        seq.mutations = self.mutations[:]
+        m = get_mutations(node)
+        if m:
+            seq.mutations.append(m)
+
+        # divergence
+        if 'div' in node['node_attrs']:
+            seq.divergence = node['node_attrs']['div']
+
+        # node 
+        seq.node = node
+
+        # age
+        seq.age =  node_value('age', node['node_attrs'])
+
+        # sex
+        seq.sex = node_value('sex', node['node_attrs'])
+
+        # claude
+        seq.claude = node_value('claude_membership', node['node_attrs'])
+
+        # region
+        seq.region = node_value('region', node['node_attrs'])
+
+        # location
+        seq.location = node_value('location', node['node_attrs'])
+
+        # country
+        seq.country = node_value('country', node['node_attrs'])
+
+        # division
+        seq.division = node_value('division', node['node_attrs'])
+
+        # originating_lab
+        seq.originating_lab = node_value('originating_lab', node['node_attrs'])
+
+        # submittinh lab
+        seq.submitting_lab = node_value('submitting_lab', node['node_attrs'])
+
+        self.sequences.append(seq)
+
+        return seq
+
+    def __str__(self):
+        ret = "{0}, {1}, {2}, {3}, # sequences {4}".format(
+            self.date, self.parent, self.name, len(self.sequences))
+        
+        for s in self.sequences:
+            ret = ret + "\t{1}\n".format(str(s))
+
+        for c in self.branches:
+            ret = ret + "\t{1}\n".format(c.name)
+
+        return (ret)
+
 class Sequence:
     def __init__(self, name, date, parent, gisaid):
         self.name = name
@@ -41,48 +163,19 @@ class Sequence:
         self.location = None
         self.gisaid = gisaid
         self.mutations = []
-        self.generation = 1
         self.age = None
         self.sex = None
         self.node = None
 
-        # set lineage
-        self.parents = []
-        self.childrens = []
-
-        # set inherited info       
-        if parent:
-            self.parents = [parent] + parent.parents[:]
-            self.generation = parent.generation + 1
- 
-        if date: 
-            # convert date 
-            s = str(date).split('.')
-            td = datetime.timedelta(days = 365 * float('0.' + s[1]))
-            self.date = datetime.date(year=int(s[0]), month=1, day=1) + td
-            self.epocTime = self.date.strftime("%s") + "000000000"
+        if not date:
+            raise NameError("### Empty date for sequence")
+        
+        self.date, self.epocTime = get_dates(date)
 
     def __str__(self):
-        #return str(self.__dict__)
-        parents = str(self.get_parents_gisid(NUM_PARENTS))
-        if self.parents and self.parents[0]:
-            pn = self.parents[0].name
-        else:
-            pn = ""
-        return("{0}, {1}, {2}, {3}, mutations {4}, div {5}, "\
+        return("{0}, {1}, {2}, {3}, {4}, div {5}, "\
                 "generations {6} {7}".format(
-            self.date, 
-            pn, self.name, self.gisaid, 
-            len(self.mutations), self.divergence, self.generation, parents))
-
-    # return parents gisaid
-    def get_parents_gisid(self, num):
-        parents = [num]
-        for i in range (0, min(num, len(self.parents))):
-            if self.parents[i]:
-                parents.append(self.parents[i].name)
-
-        return parents
+            self.date, self.parent, self.name, self.gisaid, self.division))
 
     # special handlers
     def to_list_mutations(self):
@@ -114,7 +207,6 @@ class Sequence:
                 ret.append(v)
         return ret
             
-
 def add_geo(location, values, ret):
     for l in values :
         if l['key'] != location:
@@ -123,107 +215,44 @@ def add_geo(location, values, ret):
         for (k, v) in l['demes'].items():
             ret.update({k: Geo(k, v['longitude'], v['latitude'])})
     return ret
-
-def get_mutations(node):
-    if 'branch_attrs' in node and 'mutations' in node['branch_attrs'] and len(
-            node['branch_attrs']['mutations']):
-        return node['branch_attrs']['mutations']
-    else:
-        return None
        
-def add_branch_node(node, parent, flat_list, mutations):
-    children = []
+def add_branch_node(node, parent, flat_list):
+    leaf_nodes = []
+    branch_nodes = []
 
-    # append mutations if present
+    # create branch if there are mutation on branch or leaf
     m = get_mutations(node)
-    if m:
-        mutations.append(m)
+    if m or has_leaf_mutation(node):
+        branch = Branch(node, parent)
+        parent.branches.append(branch)
+        
+        # store mutation
+        if m:
+            branch.mutations.append(m)
+    else:
+        # map to the parent branch
+        branch = parent
 
-    # cant have empty children
-    if not 'children' in node:
-        raise NameError("### Empty Children")
+    # build sequences to walk
+    for n in node['children']:
+        if is_leaf(n):
+            leaf_nodes.append(n)
+        else:
+            branch_nodes.append(n)
 
-    for c in node['children']:
-        childs = add_node(c, parent, flat_list)
-        for c in childs:
-            if len(mutations) > 0: 
-                c.mutations.append(mutations)
-            children.append(c)
+    # add sequences
+    for n in leaf_nodes:
+        # if leaf is a mutation we need to add a solo branch
+        if get_mutations(n):
+            mutated_branch = Branch(node, branch)
+            branch.branches.append(mutated_branch)
+            flat_list.append(mutated_branch.add_sequence(n))
+        else:
+            flat_list.append(branch.add_sequence(n))
 
-    return children
-
-def has_leafs(node):
-    if 'children' in node:
-        for c in node['children']:
-            if (node_value('gisaid_epi_isl',  c['node_attrs'])):
-                return True
-
-    return False
-
-# add each of the nodes and children to a queue
-def add_node(node, parent, flat_list):
-    name = node['name']
-    value = node_value('num_date', node['node_attrs'])
-    gisaid = node_value('gisaid_epi_isl', node['node_attrs'])
-
-    # 
-    # Check if its a branch node; skip the branches
-    # 
-    if not gisaid and not has_leafs(node):
-        return add_branch_node(node, parent, flat_list, [])
-
-    # sequence object
-    seq = Sequence(name, value, parent, gisaid)
-    
-    # mutations 
-    m = get_mutations(node)
-    if m:
-        seq.mutations.append(m)
-
-    # divergence
-    if 'div' in node['node_attrs']:
-        seq.divergence = node['node_attrs']['div']
-
-    # node 
-    seq.node = node
-
-    # age
-    seq.age =  node_value('age', node['node_attrs'])
-
-    # sex
-    seq.sex = node_value('sex', node['node_attrs'])
-
-    # claude
-    seq.claude = node_value('claude_membership', node['node_attrs'])
-
-    # region
-    seq.region = node_value('region', node['node_attrs'])
-
-    # location
-    seq.location = node_value('location', node['node_attrs'])
-
-    # country
-    seq.country = node_value('country', node['node_attrs'])
-
-    # division
-    seq.division = node_value('division', node['node_attrs'])
-
-    # originating_lab
-    seq.originating_lab = node_value('originating_lab', node['node_attrs'])
-
-    # submittinh lab
-    seq.submitting_lab = node_value('submitting_lab', node['node_attrs'])
-
-    # iterate children
-    flat_list.append(seq)
-  
-    if 'children' in node:
-        for c in node['children']:
-            nodes = add_node(c, seq, flat_list)
-            for n in nodes:
-                seq.childrens.append(n)
-
-    return [seq]
+    # walk non leaf branches
+    for n in branch_nodes:
+        add_branch_node(n, branch, flat_list)
 
 def write_csv(out_file, headers, output):
     f = open(out_file, 'w')
@@ -242,9 +271,9 @@ def write_csv(out_file, headers, output):
 def parse_json(file_name, flat_list, region_geo, country_geo):
     print (file_name)
     # root node
-    root = Sequence("root", None, None, None)
+    root = Branch(None, None)
 
-    with open(file_name) as json_file: 
+    with open(file_name) as json_file:      
         data = json.load(json_file) 
 
     # add region geo
@@ -255,7 +284,9 @@ def parse_json(file_name, flat_list, region_geo, country_geo):
             country_geo)
 
     # genome nodem
-    add_node(data['tree'], root, flat_list)
+    add_branch_node(data['tree'], root, flat_list)
+    
+    return root
 
 # define a main function
 def main(args):
@@ -265,7 +296,7 @@ def main(args):
 
 
     # parse the json file
-    parse_json(args.file, flat_list, region_geo, country_geo)
+    root = parse_json(args.file, flat_list, region_geo, country_geo)
 
     # write out data
     write_csv(args.outfile, OUT_FORMAT, flat_list)
