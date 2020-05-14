@@ -198,7 +198,7 @@ class Sequence:
         ret = []
         sequences = self.branch.sequences
         for s in sequences:
-            ret.append(s.gisaid)
+            ret.append(s.name)
         return ret
 
     def get_parents(self):
@@ -252,15 +252,14 @@ def add_branch_node(node, parent, flat_list):
     leaf_nodes = []
     branch_nodes = []
 
-    # create branch if there are mutation on branch or leaf
-    m = get_mutations(node)
-    if m or has_leaf_mutation(node):
+    # create branch if there are mutations
+    branch_mutation = get_mutations(node)
+    if branch_mutation:
         branch = Branch(node, parent)
         parent.branches.append(branch)
         
         # store mutation
-        if m:
-            branch.mutations.append(m)
+        branch.mutations.append(branch_mutation)
     else:
         # map to the parent branch
         branch = parent
@@ -276,9 +275,9 @@ def add_branch_node(node, parent, flat_list):
     for n in leaf_nodes:
         # if leaf is a mutation we need to add a solo branch
         if get_mutations(n):
-            mutated_branch = Branch(node, branch)
-            branch.branches.append(mutated_branch)
-            flat_list.append(mutated_branch.add_sequence(n))
+            mutated_leaf = Branch(node, branch)
+            branch.branches.append(mutated_leaf)
+            flat_list.append(mutated_leaf.add_sequence(n))
         else:
             flat_list.append(branch.add_sequence(n))
 
