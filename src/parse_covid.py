@@ -337,7 +337,7 @@ def main(args):
     for i in flat_list:
         parents = i.get_parents()
         siblings = i.get_siblings()
-        print("{0}: \n\t{1}, \n\t{2}\n".format(i.gisaid, 
+        print("{0}: \n    {1}, \n    {2}".format(i.gisaid, 
             str(parents), str(siblings)))
 
 # # # # # # # # # # # # 
