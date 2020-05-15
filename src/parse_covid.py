@@ -3,7 +3,6 @@ import csv
 import operator
 import argparse
 import datetime
-import pprint
 import json
 
 # branch id generator
@@ -12,7 +11,7 @@ unique_id = 0
 # constants
 NUM_PARENTS = 10 #number of parents to track
 OUT_FORMAT = ["epocTime", "gisaid", "name", "division", "country", "region", 
-        "mutations", "divergence"]
+        "mutations", "divergence", "strain"]
 
 def get_next_id(prefix):
     global unique_id
@@ -194,6 +193,12 @@ class Sequence:
                 "generations {6} {7}".format(
             self.date, self.parent, self.name, self.gisaid, self.division))
 
+    def __getattr__ (self, name):
+        if name == "strain":
+            return self.branch.id
+        else:
+            AttributeError("Unknown atrribute name")
+
     def get_siblings(self):
         ret = []
         sequences = self.branch.sequences
@@ -286,8 +291,8 @@ def add_branch_node(node, parent, flat_list):
         add_branch_node(n, branch, flat_list)
     return
 
-def write_csv(out_file, headers, output):
-    f = open(out_file, 'w')
+def write_csv(file, headers, output):
+    f = open(file, 'w')
     writer = csv.writer(f, delimiter=',', doublequote=True,
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
     
@@ -301,7 +306,6 @@ def write_csv(out_file, headers, output):
 
 # build timeline
 def parse_json(file_name, flat_list, region_geo, country_geo):
-    print (file_name)
     # root node
     root = Branch(None, None)
 
@@ -320,6 +324,29 @@ def parse_json(file_name, flat_list, region_geo, country_geo):
      
     return root
 
+def write_mutation_group(file, list):
+    f = open(file, 'w')
+    mutations = {}
+    for i in list:
+        d = int(i.divergence * 10)
+        if d not in mutations:
+            mutations[d] = []
+        mutations[d].append(i)
+    
+    for key, value in mutations.items():
+        s = ""
+        for i in value:
+            s = s + " " + i.name
+        f.write("Mutation {0} - {1}".format(int(key)/10, s))
+
+def write_lineage(file, list):
+    f = open(file, 'w')
+    for i in list:
+        parents = i.get_parents()
+        siblings = i.get_siblings()
+        f.write("{0}: Generation {3} Siblings {4}\n    {1}, \n    {2}".format(i.gisaid, 
+            str(parents), str(siblings), len(parents), len(siblings)))
+
 
 # define a main function
 def main(args):
@@ -331,14 +358,11 @@ def main(args):
     root = parse_json(args.file, flat_list, region_geo, country_geo)
 
     # write out data
-    write_csv(args.outfile, OUT_FORMAT, flat_list)
+    write_csv(args.outfile + ".csv", OUT_FORMAT, flat_list)
 
-    count = 10
-    for i in flat_list:
-        parents = i.get_parents()
-        siblings = i.get_siblings()
-        print("{0}: \n    {1}, \n    {2}".format(i.gisaid, 
-            str(parents), str(siblings)))
+    write_lineage(args.outfile + ".lineage", flat_list)
+
+    write_mutation_group(args.outfile + ".mut", flat_list)
 
 # # # # # # # # # # # # 
 parser = argparse.ArgumentParser()
@@ -346,7 +370,7 @@ parser.add_argument('--file', nargs='?',
         default = "/home/ubuntu/covid/data/covid.json",
         help='covid input file name')
 parser.add_argument('--outfile', nargs='?', 
-        default = "/home/ubuntu/covid/output/data.csv",
+        default = "/home/ubuntu/covid/output/data",
         help='covid output file name')
 args = parser.parse_args()
 
