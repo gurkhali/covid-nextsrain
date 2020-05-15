@@ -11,7 +11,7 @@ unique_id = 0
 # constants
 NUM_PARENTS = 10 #number of parents to track
 OUT_FORMAT = ["epocTime", "gisaid", "name", "division", "country", "region", 
-        "mutations", "divergence", "strain"]
+        "mutations", "divergence", "strain", "strainname"]
 
 def get_next_id(prefix):
     global unique_id
@@ -196,6 +196,8 @@ class Sequence:
     def __getattr__ (self, name):
         if name == "strain":
             return self.branch.id
+        elif name == "strainname":
+            return self.branch.sequences[0].name
         else:
             AttributeError("Unknown atrribute name")
 
@@ -342,6 +344,7 @@ def write_mutation_group(file, list):
 def write_lineage(file, list):
     f = open(file, 'w')
     for i in list:
+        sequences = i.branch.sequences
         parents = i.get_parents()
         siblings = i.get_siblings()
         f.write("{0}: Generation {3} Siblings {4}\n    {1}, \n    {2}".format(i.gisaid, 
