@@ -6,6 +6,7 @@ lines = [ "strains"
          + "region=" + str(df["region"][d]) + ""
          + " "
          + "gisaid=\"" + str(df["gisaid"][d]) + "\","
+         + "strain=\"" + str(df["strain"][d]) + "\","
          + "divergence=" + str(df["divergence"][d]) + ","
          + "name=\"" + str(df["name"][d]) + "\","
          + "mutations=" + str(df["mutations"][d])
