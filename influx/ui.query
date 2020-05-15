@@ -1,0 +1,14 @@
+data1 = from(bucket: "test")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "strains")
+  |> filter(fn: (r) => r["_field"] == "strainname")
+  
+data2 = from(bucket: "test")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "strains")
+  |> filter(fn: (r) => r["_field"]  == "region")
+
+join(
+  tables: {"d1": data1, "d2": data2},
+  on: ["_time"]
+)
