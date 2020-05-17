@@ -133,4 +133,35 @@ from(bucket: "test")
  // |> keep(columns: [filter_field_name, "_start", "_stop", "_time", "_value", "_field"])
     
   
+# Foreign Strains
+// list of divisions to filter
+filter_values = ["Asia"]
 
+// filter by field name 
+filter_field_name = """"
+drop_cols = ["region","division"]
+
+// value flips the behavior from white list to blacklist
+include_fields = true
+
+from(bucket: "test")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "infections")
+  |> filter(fn: (r) => r["_field"] == "strain_division")
+  |> filter(fn: (r) => r["_value"] !=  r["division"])
+ 
+  |> filter(fn: (r) =>
+      if filter_field_name == "country"
+        then contains(value: r["country"], set: filter_values) == include_fields
+      else if filter_field_name == "region"
+        then contains(value: r["region"], set: filter_values) == include_fields
+      else if filter_field_name == "division"
+        then contains(value: r["division"], set: filter_values) == include_fields
+      else true
+  )
+ |> drop(columns: drop_cols)
+  |> window(every: 1h)
+  
+  |> count()
+  |> duplicate(column: "_stop", as: "_time")
+  |> window(every: inf)

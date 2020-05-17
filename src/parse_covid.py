@@ -11,7 +11,8 @@ unique_id = 0
 # constants
 NUM_PARENTS = 10 #number of parents to track
 OUT_FORMAT = ["epocTime", "gisaid", "name", "division", "country", "region", 
-        "mutations", "divergence", "strain", "strainname", "first_strain"]
+        "mutations", "divergence", "strain", "strainname", "first_strain",
+        "strain_division"]
 
 def get_next_id(prefix):
     global unique_id
@@ -203,8 +204,15 @@ class Sequence:
             return self.branch.id
         elif name == "strainname":
             return self.branch.sequences[0].name
+        elif name == "strain_division":
+            if self.first_strain:
+                # if its a first strain then pick parent
+                if self.branch.parent and len(self.branch.paret.sequences):
+                    return self.branch.parent.sequences[0].division
+            return self.branch.sequences[0].division
         else:
             AttributeError("Unknown atrribute name")
+            print("######## Error - bad atrtribute")
 
     def get_siblings(self):
         ret = []
