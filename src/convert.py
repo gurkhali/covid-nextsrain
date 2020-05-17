@@ -11,6 +11,7 @@ infections = [ "infections"
          + "strain=\"" + str(df["strain"][d]) + "\","
          + "strainname=\"" + str(df["strainname"][d]) + "\","
          + "divergence=" + str(df["divergence"][d]) + ","
+         + "first_strain=" + str(df["first_strain"][d]) + ","
          + "value=1,"
          + "name=\"" + str(df["name"][d]) + "\","
 
@@ -21,6 +22,7 @@ for item in infections:
     thefile.write("%s\n" % item)
 
 strains = [ "strains,"
+         + "first_strain=" + str(df["first_strain"][d]) + ","
          + "key=s"
          + " "
          + "strain=\"" + str(df["strain"][d]) + "\","

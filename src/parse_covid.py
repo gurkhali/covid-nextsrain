@@ -11,7 +11,7 @@ unique_id = 0
 # constants
 NUM_PARENTS = 10 #number of parents to track
 OUT_FORMAT = ["epocTime", "gisaid", "name", "division", "country", "region", 
-        "mutations", "divergence", "strain", "strainname"]
+        "mutations", "divergence", "strain", "strainname", "first_strain"]
 
 def get_next_id(prefix):
     global unique_id
@@ -141,6 +141,10 @@ class Branch:
         # set branch name
         seq.branch = self
 
+        # unique strain
+        if len(self.sequences) > 0:
+            seq.first_strain = 0
+
         self.sequences.append(seq)
 
         return seq
@@ -182,6 +186,7 @@ class Sequence:
         self.sex = None
         self.node = None
         self.branch = None
+        self.first_strain = 1
 
         if not date:
             raise NameError("### Empty date for sequences")
@@ -227,7 +232,7 @@ class Sequence:
     # conver object to list type based on format
     def to_list(self, format=OUT_FORMAT):
         ret = []
-        excludes = ['name', 'mutations', 'divergence']
+        excludes = ['name', 'mutations', 'divergence', 'first_strain']
         
         for f in format:
             try:
@@ -238,7 +243,6 @@ class Sequence:
                     v = getattr(self, f)         
                     if f not in excludes and v:
                         v = v.replace(' ', '-')
-                # strip spa
 
             except AttributeError:
                 ret.append(None)
