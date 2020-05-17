@@ -1,62 +1,10 @@
-# unique infection
-from(bucket: "test")
-  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-  |> filter(fn: (r) => r["_measurement"] == "infections")
-  |> filter(fn: (r) => r["_field"] == "strainname")
-  |> drop(columns: ["country", "division"])
-  |> unique()
-  |> yield(name: "unique")
 
-
-# join query
-data1 = from(bucket: "test")
-  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-  |> filter(fn: (r) => r["_measurement"] == "strains")
-  |> filter(fn: (r) => r["_field"] == "strainname")
-  
-data2 = from(bucket: "test")
-  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-  |> filter(fn: (r) => r["_measurement"] == "strains")
-  |> filter(fn: (r) => r["_field"]  == "region")
-
-join(
-  tables: {"d1": data1, "d2": data2},
-  on: ["_time"]
-)
-
-
-# conditional diversions
+# Infections by All Strains
 // list of divisions to filter
-filter_values = ["Shanghai", "USA", "Europe", "Washington"]
+filter_values = ["Asia"]
 
 // filter by field name 
-filter_field_name = ""
-
-// value flips the behavior from white list to blacklist
-include_fields = true
-
-from(bucket: "test")
-  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-  |> filter(fn: (r) => r["_measurement"] == "infections")
-  |> filter(fn: (r) => r["_field"] == "divergence")
-  |> filter(fn: (r) =>
-      if filter_field_name == "country"
-        then contains(value: r["country"], set: filter_values) == include_fields
-      else if filter_field_name == "region"
-        then contains(value: r["region"], set: filter_values) == include_fields
-      else if filter_field_name == "division"
-        then contains(value: r["division"], set: filter_values) == include_fields
-      else true
-  )
-  
- // |> keep(columns: [filter_field_name, "_start", "_stop", "_time", "_value", "_field"])
-
-# infection count over time
-// list of divisions to filter
-filter_values = [""]
-
-// filter by field name 
-filter_field_name = ""
+filter_field_name = """"
 drop_cols = ["country","division"]
 
 // value flips the behavior from white list to blacklist
@@ -81,3 +29,108 @@ from(bucket: "test")
   |> count()
   |> duplicate(column: "_stop", as: "_time")
   |> window(every: inf)
+
+# Unique Strains by Regions
+from(bucket: "test")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "infections")
+  |> filter(fn: (r) => r["_field"] == "strainname")
+  |> drop(columns: ["country", "division"])
+  |> unique()
+  |> yield(name: "unique")
+
+
+# New Strains
+// list of divisions to filter
+filter_values = ["Asia"]
+
+// filter by field name 
+filter_field_name = """"
+drop_cols = ["country","division"]
+
+// value flips the behavior from white list to blacklist
+include_fields = true
+
+from(bucket: "test")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "infections")
+  |> filter(fn: (r) => r["_field"] == "first_strain")
+  |> filter(fn: (r) => r["_value"] == 1)
+  |> filter(fn: (r) =>
+      if filter_field_name == "country"
+        then contains(value: r["country"], set: filter_values) == include_fields
+      else if filter_field_name == "region"
+        then contains(value: r["region"], set: filter_values) == include_fields
+      else if filter_field_name == "division"
+        then contains(value: r["division"], set: filter_values) == include_fields
+      else true
+  )
+  //|> keep(columns: [filter_field_name, "_start", "_stop", "_time", "_value", "_field"])
+  |> drop(columns: drop_cols)
+  |> window(every: 1h)
+  |> count()
+  |> duplicate(column: "_stop", as: "_time")
+  |> window(every: inf)
+
+
+
+# Infections by Known Strains
+// list of divisions to filter
+filter_values = ["Asia"]
+
+// filter by field name 
+filter_field_name = """"
+drop_cols = ["country","division"]
+
+// value flips the behavior from white list to blacklist
+include_fields = true
+
+from(bucket: "test")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "infections")
+  |> filter(fn: (r) => r["_field"] == "first_strain")
+  |> filter(fn: (r) => r["_value"] == 0)
+  |> filter(fn: (r) =>
+      if filter_field_name == "country"
+        then contains(value: r["country"], set: filter_values) == include_fields
+      else if filter_field_name == "region"
+        then contains(value: r["region"], set: filter_values) == include_fields
+      else if filter_field_name == "division"
+        then contains(value: r["division"], set: filter_values) == include_fields
+      else true
+  )
+  //|> keep(columns: [filter_field_name, "_start", "_stop", "_time", "_value", "_field"])
+  |> drop(columns: drop_cols)
+  |> window(every: 1h)
+  |> count()
+  |> duplicate(column: "_stop", as: "_time")
+  |> window(every: inf)
+
+# Diversion by Region/Country/Divisions
+// list of divisions to filter
+filter_values = ["Shanghai", "USA", "Europe", "Washington"]
+
+// filter by field name 
+filter_field_name = ""
+
+// value flips the behavior from white list to blacklist
+include_fields = true
+
+from(bucket: "test")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "infections")
+  |> filter(fn: (r) => r["_field"] == "divergence")
+  |> filter(fn: (r) =>
+      if filter_field_name == "country"
+        then contains(value: r["country"], set: filter_values) == include_fields
+      else if filter_field_name == "region"
+        then contains(value: r["region"], set: filter_values) == include_fields
+      else if filter_field_name == "division"
+        then contains(value: r["division"], set: filter_values) == include_fields
+      else true
+  )
+  
+ // |> keep(columns: [filter_field_name, "_start", "_stop", "_time", "_value", "_field"])
+    
+  
+
