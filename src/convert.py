@@ -11,6 +11,7 @@ infections = [ "infections"
          + "strain=\"" + str(df["strain"][d]) + "\","
          + "strainname=\"" + str(df["strainname"][d]) + "\","
          + "divergence=" + str(df["divergence"][d]) + ","
+         + "value=1,"
          + "name=\"" + str(df["name"][d]) + "\","
 
          + "mutations=" + str(df["mutations"][d])

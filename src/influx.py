@@ -21,6 +21,5 @@ lines = []
 f = open("../output/chronograf.txt")
 for l in f:
     lines.append(l)
-    print (l)
 
 write_api.write(bucket, org, lines)
