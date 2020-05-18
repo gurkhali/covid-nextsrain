@@ -13,6 +13,8 @@ infections = [ "infections"
          + "divergence=" + str(df["divergence"][d]) + ","
          + "first_strain=" + str(df["first_strain"][d]) + ","
          + "strain_division=\"" + str(df["strain_division"][d]) + "\","
+         + "branch_id=\"" + str(df["branch_id"][d]) + "\","
+         + "branch_ids=\"" + str(df["branch_ids"][d]) + "\","
          + "value=1,"
          + "name=\"" + str(df["name"][d]) + "\","
 

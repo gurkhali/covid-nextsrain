@@ -12,7 +12,7 @@ unique_id = 0
 NUM_PARENTS = 10 #number of parents to track
 OUT_FORMAT = ["epocTime", "gisaid", "name", "division", "country", "region", 
         "mutations", "divergence", "strain", "strainname", "first_strain",
-        "strain_division"]
+        "strain_division", "branch_ids", "branch_id"]
 
 def get_next_id(prefix):
     global unique_id
@@ -212,7 +212,6 @@ class Sequence:
             return self.branch.sequences[0].division
         else:
             AttributeError("Unknown atrribute name")
-            print("######## Error - bad atrtribute")
 
     def get_siblings(self):
         ret = []
@@ -221,13 +220,14 @@ class Sequence:
             ret.append(s.name)
         return ret
 
-    def get_parents(self):
-        ret = []
-        parent = self.branch
-        while parent:
-            ret.append(parent.id)
-            parent = parent.parent
-        return ret
+    def get_parent_branches(self):
+        ret = ""
+        branch = self.branch 
+        while branch:
+            ret = ret + "-" + branch.id
+            branch = branch.parent
+
+        return ret[1:]
 
     # special handlers
     def to_list_mutations(self):
@@ -247,6 +247,17 @@ class Sequence:
                 # handle mutations differently
                 if f == "mutations":
                     v = self.to_list_mutations()
+                elif f == "branch_id":
+                    if self.branch:
+                        v = self.branch.id
+                    else:
+                        v = "None"
+                elif f == "branch_ids":
+                    if self.branch:
+                        v = self.get_parent_branches()
+                    else:
+                        v = "None"
+
                 else:
                     v = getattr(self, f)         
                     if f not in excludes and v:
@@ -353,14 +364,14 @@ def write_mutation_group(file, list):
             s = s + " " + i.name
         f.write("Mutation {0} - {1}".format(int(key)/10, s))
 
-def write_lineage(file, list):
-    f = open(file, 'w')
-    for i in list:
-        sequences = i.branch.sequences
-        parents = i.get_parents()
-        siblings = i.get_siblings()
-        f.write("{0}: Generation {3} Siblings {4}\n    {1}, \n    {2}".format(i.gisaid, 
-            str(parents), str(siblings), len(parents), len(siblings)))
+def write_lineage(file, list):       #   f = open(file, 'w')
+#    for i in list:
+        #parents = []
+        #i.get_lineage(parents)
+        print (str(parents))
+        #siblings = i.get_siblings()
+        #f.write("{0}: Generation {3} Siblings {4}\n    {1}, \n    {2}".format(i.gisaid, 
+       #     str(parents), str(siblings), len(parents), len(siblings)))
 
 
 # define a main function
@@ -375,7 +386,7 @@ def main(args):
     # write out data
     write_csv(args.outfile + ".csv", OUT_FORMAT, flat_list)
 
-    write_lineage(args.outfile + ".lineage", flat_list)
+    #write_lineage(args.outfile + ".lineage", flat_list)
 
     write_mutation_group(args.outfile + ".mut", flat_list)
 
