@@ -18,7 +18,7 @@ infections = [ "infections"
          + "value=1,"
          + "name=\"" + str(df["name"][d]) + "\","
 
-         + "mutations=" + str(df["mutations"][d])
+         + "mutations=\"" + str(df["mutations"][d]) + "\""
          + " " + str(df["epocTime"][d]) for d in range(len(df))]
 
 for item in infections:
@@ -40,7 +40,7 @@ strains = [ "strains,"
          + "value=1,"
          + "name=\"" + str(df["name"][d]) + "\","
 
-         + "mutations=" + str(df["mutations"][d])
+         + "mutations=\"" + str(df["mutations"][d]) + "\""
          + " " + str(df["epocTime"][d]) for d in range(len(df))]
 
 for item in strains:

@@ -67,7 +67,12 @@ class Branch:
         self.generation = 1
         
         self.sequences = []
-        self.mutations = []
+        #self.mutations = []
+        if parent:
+            self.mutations = parent.mutations[:]
+        else:
+            self.mutations = []
+
         self.date = None
 
         if node:
@@ -231,10 +236,9 @@ class Sequence:
 
     # special handlers
     def to_list_mutations(self):
-        if len(self.mutations):
-            ret = 1
-        else:
-            ret = 0
+        ret = str(self.mutations).translate(str.maketrans({':' : '-', 
+            ',' : '-' ,'\'' : '' ,' ' : '' ,'[' : '' ,']' : '' ,
+            '{' : '','}' : ''}))
         return ret
 
     # conver object to list type based on format
