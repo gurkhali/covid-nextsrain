@@ -25,16 +25,19 @@ for item in infections:
     thefile.write("%s\n" % item)
 
 strains = [ "strains,"
+         + "country=" + str(df["country"][d]) + ","
+         + "division=" + str(df["division"][d]) + ","
          + "first_strain=" + str(df["first_strain"][d]) + ","
-         + "key=s"
+         + "region=" + str(df["region"][d]) + ""
          + " "
-         + "strain=\"" + str(df["strain"][d]) + "\","
          + "gisaid=\"" + str(df["gisaid"][d]) + "\","
-         + "country=\"" + str(df["country"][d]) + "\","
-         + "division=\"" + str(df["division"][d]) + "\","
-         + "divergence=" + str(df["divergence"][d]) + ","
-         + "region=\"" + str(df["region"][d]) + "\","
+         + "strain=\"" + str(df["strain"][d]) + "\","
          + "strainname=\"" + str(df["strainname"][d]) + "\","
+         + "divergence=" + str(df["divergence"][d]) + ","
+         + "strain_division=\"" + str(df["strain_division"][d]) + "\","
+         + "branch_id=\"" + str(df["branch_id"][d]) + "\","
+         + "branch_ids=\"" + str(df["branch_ids"][d]) + "\","
+         + "value=1,"
          + "name=\"" + str(df["name"][d]) + "\","
 
          + "mutations=" + str(df["mutations"][d])

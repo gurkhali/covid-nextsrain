@@ -18,7 +18,7 @@ def get_next_id(prefix):
     global unique_id
     unique_id = unique_id + 1
 
-    return ("{0}_{1}".format(prefix, str(unique_id)))
+    return ("{0}_{1:09d}".format(prefix, unique_id))
 
 def get_mutations(node):
     if 'branch_attrs' in node and 'mutations' in node['branch_attrs'] and len(
