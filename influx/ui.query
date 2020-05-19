@@ -72,7 +72,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 24,
+     "y": 4,
      "w": 12,
      "h": 4
     },
@@ -144,7 +144,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 20,
+     "y": 24,
      "w": 12,
      "h": 4
     },
@@ -216,7 +216,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 4,
+     "y": 20,
      "w": 12,
      "h": 4
     },
@@ -233,7 +233,7 @@
     "type": "view",
     "id": "05b3f6439b6f8000",
     "attributes": {
-     "name": "Diversion by Region/Country/Divisions",
+     "name": "Divergence by Region",
      "properties": {
       "shape": "chronograf-v2",
       "type": "scatter",
@@ -271,11 +271,12 @@
        "region"
       ],
       "symbolColumns": [
-       "_start",
-       "_stop",
-       "_field",
+       "result",
+       "region",
        "_measurement",
-       "region"
+       "_field",
+       "_stop",
+       "_start"
       ],
       "xColumn": "_time",
       "yColumn": "_value",
@@ -295,12 +296,12 @@
     "type": "view",
     "id": "05b417e4f82f8000",
     "attributes": {
-     "name": "All Strains",
+     "name": "Reported Strains by Regions",
      "properties": {
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"\"\"\"\ndrop_cols = [\"country\",\"division\", \"first_strain\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  //|> keep(columns: [filter_field_name, \"_start\", \"_stop\", \"_time\", \"_value\", \"_field\"])\n  |> drop(columns: drop_cols)\n  |> window(every: 1h)\n  |> count()\n  |> duplicate(column: \"_stop\", as: \"_time\")\n  |> window(every: inf)\n",
+        "text": "// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"\"\"\"\ndrop_cols = [\"country\",\"division\", \"first_strain\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n    every: 24h,\n    fn: count\n  )",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -373,7 +374,7 @@
       "showNoteWhenEmpty": false,
       "xColumn": "_time",
       "yColumn": "_value",
-      "shadeBelow": false,
+      "shadeBelow": true,
       "position": "overlaid",
       "timeFormat": "YYYY/MM/DD HH:mm:ss"
      }
@@ -461,7 +462,7 @@
       "showNoteWhenEmpty": false,
       "xColumn": "_time",
       "yColumn": "_value",
-      "shadeBelow": false,
+      "shadeBelow": true,
       "position": "overlaid",
       "timeFormat": ""
      }
@@ -512,7 +513,7 @@
          "",
          ""
         ],
-        "label": "",
+        "label": "Infection Count",
         "prefix": "",
         "suffix": "",
         "base": "10",
@@ -549,7 +550,7 @@
       "showNoteWhenEmpty": false,
       "xColumn": "_time",
       "yColumn": "_value",
-      "shadeBelow": false,
+      "shadeBelow": true,
       "position": "overlaid",
       "timeFormat": ""
      }
@@ -559,7 +560,7 @@
     "type": "view",
     "id": "05b4d742fe6f8000",
     "attributes": {
-     "name": "Foreign Strains",
+     "name": "Non Local Strains",
      "properties": {
       "shape": "chronograf-v2",
       "queries": [
@@ -637,7 +638,7 @@
       "showNoteWhenEmpty": false,
       "xColumn": "_time",
       "yColumn": "_value",
-      "shadeBelow": false,
+      "shadeBelow": true,
       "position": "overlaid",
       "timeFormat": ""
      }
@@ -715,7 +716,7 @@
     "type": "view",
     "id": "05b6a7561692a000",
     "attributes": {
-     "name": "Existing Strain",
+     "name": "Existing Strains by Region",
      "properties": {
       "shape": "chronograf-v2",
       "type": "histogram",
@@ -824,7 +825,7 @@
          "",
          ""
         ],
-        "label": "Infection Count",
+        "label": "New strains vs Existing Strains",
         "prefix": "",
         "suffix": "",
         "base": "10",
@@ -836,24 +837,24 @@
       "geom": "line",
       "colors": [
        {
-        "id": "d48ee11d-cb57-48b1-8729-8a54feaa77a5",
+        "id": "2e22a77d-cc87-40b7-bd19-b311394db941",
         "type": "scale",
-        "hex": "#FD7A5D",
-        "name": "Delorean",
+        "hex": "#31C0F6",
+        "name": "Nineteen Eighty Four",
         "value": 0
        },
        {
-        "id": "d82c059e-76a9-4c09-a63e-698c58f0f028",
+        "id": "fdfd8739-cec9-4953-8c89-ca423dd8ebf2",
         "type": "scale",
-        "hex": "#5F1CF2",
-        "name": "Delorean",
+        "hex": "#A500A5",
+        "name": "Nineteen Eighty Four",
         "value": 0
        },
        {
-        "id": "4c3d6381-4f96-4c80-8b7c-39c1c98dd321",
+        "id": "5eb34623-831f-4877-8752-e264dace790e",
         "type": "scale",
-        "hex": "#4CE09A",
-        "name": "Delorean",
+        "hex": "#FF7E27",
+        "name": "Nineteen Eighty Four",
         "value": 0
        }
       ],
@@ -861,9 +862,9 @@
       "showNoteWhenEmpty": false,
       "xColumn": "_time",
       "yColumn": "_value",
-      "shadeBelow": false,
+      "shadeBelow": true,
       "position": "overlaid",
-      "timeFormat": "YYYY/MM/DD HH:mm:ss"
+      "timeFormat": ""
      }
     }
    },
@@ -871,12 +872,12 @@
     "type": "view",
     "id": "05b6e86fb092a000",
     "attributes": {
-     "name": "G Mutations across Regions",
+     "name": " D614G Mutations across Regions",
      "properties": {
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "import \"strings\"\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"mutations\")\n  |> drop(columns: [\"country\", \"division\", \"first_strain\"])\n  |> aggregateWindow(\n      every: 24h,\n      fn: (column, tables=<-) => tables |> reduce(\n            identity: {s_mutations: 0.0, g_mutations: 0.0},\n            fn: (r, accumulator) => ({\n              s_mutations:\n                if strings.containsStr(v: r._value, substr: \"-S-\") then accumulator.s_mutations + 1.0\n                else accumulator.s_mutations + 0.0,\n              g_mutations:\n                if strings.containsStr(v: r._value, substr: \"-G-\") then accumulator.g_mutations + 1.0\n                else accumulator.g_mutations + 0.0\n            })\n        )\n    )\n  |> drop(columns: [\"g_mutations\"])\n  |> rename(columns: {s_mutations: \"_value\"})",
+        "text": "import \"strings\"\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"mutations\")\n  |> drop(columns: [\"country\", \"division\", \"first_strain\"])\n  |> aggregateWindow(\n      every: 24h,\n      fn: (column, tables=<-) => tables |> reduce(\n            identity: {s_mutations: 0.0, g_mutations: 0.0},\n            fn: (r, accumulator) => ({\n              s_mutations:\n                if strings.containsStr(v: r._value, substr: \"-D614G-\") then accumulator.s_mutations + 1.0\n                else accumulator.s_mutations + 0.0,\n              g_mutations:\n                if strings.containsStr(v: r._value, substr: \"--\") then accumulator.g_mutations + 1.0\n                else accumulator.g_mutations + 0.0\n            })\n        )\n    )\n  |> drop(columns: [\"g_mutations\"])\n  |> rename(columns: {s_mutations: \"_value\"})",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -912,7 +913,7 @@
          "",
          ""
         ],
-        "label": "",
+        "label": " D614G Mutations",
         "prefix": "",
         "suffix": "",
         "base": "10",
@@ -949,7 +950,7 @@
       "showNoteWhenEmpty": false,
       "xColumn": "_time",
       "yColumn": "_value",
-      "shadeBelow": false,
+      "shadeBelow": true,
       "position": "overlaid",
       "timeFormat": ""
      }
