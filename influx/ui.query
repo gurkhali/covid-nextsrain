@@ -53,6 +53,14 @@
       {
        "type": "cell",
        "id": "05b6e86fb092a000"
+      },
+      {
+       "type": "cell",
+       "id": "05b892e6741dd000"
+      },
+      {
+       "type": "cell",
+       "id": "05b8943a655dd000"
       }
      ]
     },
@@ -199,7 +207,7 @@
     "attributes": {
      "x": 0,
      "y": 8,
-     "w": 12,
+     "w": 6,
      "h": 4
     },
     "relationships": {
@@ -225,6 +233,42 @@
       "data": {
        "type": "view",
        "id": "05b6e86fb092a000"
+      }
+     }
+    }
+   },
+   {
+    "id": "05b892e6741dd000",
+    "type": "cell",
+    "attributes": {
+     "x": 6,
+     "y": 8,
+     "w": 3,
+     "h": 4
+    },
+    "relationships": {
+     "view": {
+      "data": {
+       "type": "view",
+       "id": "05b892e6741dd000"
+      }
+     }
+    }
+   },
+   {
+    "id": "05b8943a655dd000",
+    "type": "cell",
+    "attributes": {
+     "x": 9,
+     "y": 8,
+     "w": 3,
+     "h": 4
+    },
+    "relationships": {
+     "view": {
+      "data": {
+       "type": "view",
+       "id": "05b8943a655dd000"
       }
      }
     }
@@ -698,8 +742,6 @@
       ],
       "xColumn": "_time",
       "fillColumns": [
-       "_start",
-       "_stop",
        "_field",
        "_measurement",
        "region"
@@ -766,8 +808,6 @@
       ],
       "xColumn": "_time",
       "fillColumns": [
-       "_start",
-       "_stop",
        "_field",
        "_measurement",
        "region"
@@ -953,6 +993,122 @@
       "shadeBelow": true,
       "position": "overlaid",
       "timeFormat": ""
+     }
+    }
+   },
+   {
+    "type": "view",
+    "id": "05b892e6741dd000",
+    "attributes": {
+     "name": "New Strains",
+     "properties": {
+      "shape": "chronograf-v2",
+      "type": "gauge",
+      "queries": [
+       {
+        "text": "// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"\"\"\"\ndrop_cols = [\"country\",\"division\", \"region\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"first_strain\"] == \"1\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  //|> keep(columns: [filter_field_name, \"_start\", \"_stop\", \"_time\", \"_value\", \"_field\"])\n  |> drop(columns: drop_cols)\n\n   |> count()\n",
+        "editMode": "advanced",
+        "name": "",
+        "builderConfig": {
+         "buckets": [],
+         "tags": [
+          {
+           "key": "_measurement",
+           "values": [],
+           "aggregateFunctionType": "filter"
+          }
+         ],
+         "functions": [],
+         "aggregateWindow": {
+          "period": "auto"
+         }
+        }
+       }
+      ],
+      "prefix": "",
+      "tickPrefix": "",
+      "suffix": "",
+      "tickSuffix": "",
+      "colors": [
+       {
+        "id": "0",
+        "type": "min",
+        "hex": "#FFD255",
+        "name": "thunder",
+        "value": 0
+       },
+       {
+        "id": "1",
+        "type": "max",
+        "hex": "#7A65F2",
+        "name": "star",
+        "value": 100
+       }
+      ],
+      "decimalPlaces": {
+       "isEnforced": true,
+       "digits": 2
+      },
+      "note": "",
+      "showNoteWhenEmpty": false
+     }
+    }
+   },
+   {
+    "type": "view",
+    "id": "05b8943a655dd000",
+    "attributes": {
+     "name": "Existing Strains",
+     "properties": {
+      "shape": "chronograf-v2",
+      "type": "gauge",
+      "queries": [
+       {
+        "text": "// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"\"\"\"\ndrop_cols = [\"country\",\"division\", \"region\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"first_strain\"] == \"0\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  //|> keep(columns: [filter_field_name, \"_start\", \"_stop\", \"_time\", \"_value\", \"_field\"])\n  |> drop(columns: drop_cols)\n\n   |> count()\n",
+        "editMode": "advanced",
+        "name": "",
+        "builderConfig": {
+         "buckets": [],
+         "tags": [
+          {
+           "key": "_measurement",
+           "values": [],
+           "aggregateFunctionType": "filter"
+          }
+         ],
+         "functions": [],
+         "aggregateWindow": {
+          "period": "auto"
+         }
+        }
+       }
+      ],
+      "prefix": "",
+      "tickPrefix": "",
+      "suffix": "",
+      "tickSuffix": "",
+      "colors": [
+       {
+        "id": "0",
+        "type": "min",
+        "hex": "#00C9FF",
+        "name": "laser",
+        "value": 0
+       },
+       {
+        "id": "1",
+        "type": "max",
+        "hex": "#9394FF",
+        "name": "comet",
+        "value": 100
+       }
+      ],
+      "decimalPlaces": {
+       "isEnforced": true,
+       "digits": 2
+      },
+      "note": "",
+      "showNoteWhenEmpty": false
      }
     }
    },
