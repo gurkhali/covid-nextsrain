@@ -4,6 +4,7 @@ from csv import DictReader
 
 file_name_countries = '../data/countries.csv'
 file_name_infections = '../data/infections.csv'
+file_name_deaths = '../data/deaths.csv'
 
 out_file = open('../output/chronograf.txt', 'w')
 df = pd.read_csv("../output/data.csv")
@@ -75,12 +76,13 @@ def build_continent(file_name):
             d[country] = continent
     return d
 
-def write_infections(file_name_infections, file_name_countries,  out_file):
+def write_hopkins_data(measurement, file_name_input, 
+        file_name_countries,  out_file):
     co = build_continent(file_name_countries)
 
     infections = []
 
-    df = pd.read_csv(file_name_infections)
+    df = pd.read_csv(file_name_input)
     for v in df.values:
         if str(v[0]) != "nan":
             d = v[0]
@@ -107,11 +109,14 @@ def write_infections(file_name_infections, file_name_countries,  out_file):
             dt = datetime.datetime.strptime(df.columns[i],
                     '%m/%d/%y').strftime("%s") + "000000000"
 
-            out_file.write("infections," +
+            out_file.write(measurement + "," +
                     "country="+ c + ","
                     "division="+ d + ","
                     "region=" + cn + ""
                     " " +
                     "positives={0} {1}\n".format(value, dt))
 
-write_infections(file_name_infections, file_name_countries,  out_file)
+write_hopkins_data("infections", file_name_infections, 
+        file_name_countries,  out_file)
+write_hopkins_data("deaths", file_name_deaths, 
+        file_name_countries,  out_file)
