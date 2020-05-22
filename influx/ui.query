@@ -76,13 +76,32 @@
       },
       {
        "type": "variable",
-       "id": "05ba7cf6bdc04000"
+       "id": "05ba8608dd804000"
+      },
+      {
+       "type": "variable",
+       "id": "05ba865f63c04000"
+      },
+      {
+       "type": "variable",
+       "id": "05ba86cc01404000"
       }
      ]
     }
    }
   },
   "included": [
+   {
+    "type": "label",
+    "id": "05baaeb1394df000",
+    "attributes": {
+     "name": "test",
+     "properties": {
+      "color": "#ce58eb",
+      "description": ""
+     }
+    }
+   },
    {
     "id": "05b3f6439b6f8000",
     "type": "cell",
@@ -309,7 +328,7 @@
       "type": "scatter",
       "queries": [
        {
-        "text": "// list of divisions to filter\nfilter_values = [\"Shanghai\", \"USA\", \"Europe\", \"Washington\"]\n\n// filter by field name \nfilter_field_name = \"\"\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"divergence\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n|> drop(columns: [\"country\", \"division\", \"first_strain\"])\n // |> keep(columns: [filter_field_name, \"_start\", \"_stop\", \"_time\", \"_value\", \"_field\"])\n    \n  ",
+        "text": "// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklisat\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"divergence\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n|> drop(columns: drop_cols)\n    \n  ",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -341,12 +360,11 @@
        "region"
       ],
       "symbolColumns": [
-       "result",
-       "region",
-       "_measurement",
-       "_field",
+       "_start",
        "_stop",
-       "_start"
+       "_field",
+       "_measurement",
+       "region"
       ],
       "xColumn": "_time",
       "yColumn": "_value",
@@ -371,7 +389,7 @@
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"\"\"\"\ndrop_cols = [\"country\",\"division\", \"first_strain\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n    every: 24h,\n    fn: count\n  )",
+        "text": "// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklist\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n    every: 24h,\n    fn: count\n  )",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -459,7 +477,7 @@
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"\"\"\"\ndrop_cols = [\"country\",\"division\", \"first_strain\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"strainname\")\n  |> filter(fn: (r) => r[\"first_strain\"] == \"0\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  //|> keep(columns: [filter_field_name, \"_start\", \"_stop\", \"_time\", \"_value\", \"_field\"])\n  |> drop(columns: drop_cols)\n  |> window(every: 1h)\n  |> count()\n  |> duplicate(column: \"_stop\", as: \"_time\")\n  |> window(every: inf)",
+        "text": "\n// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklist\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"strainname\")\n  |> filter(fn: (r) => r[\"first_strain\"] == \"0\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> window(every: 1h)\n  |> count()\n  |> duplicate(column: \"_stop\", as: \"_time\")\n  |> window(every: inf)",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -547,7 +565,7 @@
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"\"\"\"\ndrop_cols = [\"country\",\"division\", \"first_strain\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"strainname\")\n  |> filter(fn: (r) => r[\"first_strain\"] == \"1\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  //|> keep(columns: [filter_field_name, \"_start\", \"_stop\", \"_time\", \"_value\", \"_field\"])\n  |> drop(columns: drop_cols)\n  |> window(every: 1h)\n  |> count()\n  |> duplicate(column: \"_stop\", as: \"_time\")\n  |> window(every: inf)",
+        "text": "\n// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklist\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"strainname\")\n  |> filter(fn: (r) => r[\"first_strain\"] == \"1\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> window(every: 1h)\n  |> count()\n  |> duplicate(column: \"_stop\", as: \"_time\")\n  |> window(every: inf)",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -635,7 +653,7 @@
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"\"\"\"\ndrop_cols = [\"country\",\"division\", \"first_strain\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"strain_division\")\n  |> filter(fn: (r) => r[\"_value\"] !=  r[\"division\"])\n \n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n |> drop(columns: drop_cols)\n  |> window(every: 1h)\n  \n  |> count()\n  |> duplicate(column: \"_stop\", as: \"_time\")\n  |> window(every: inf)",
+        "text": "// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklist\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"strain_division\")\n  |> filter(fn: (r) => r[\"_value\"] !=  r[\"division\"])\n \n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n |> drop(columns: drop_cols)\n  |> window(every: 1h)\n  \n  |> count()\n  |> duplicate(column: \"_stop\", as: \"_time\")\n  |> window(every: inf)",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -724,7 +742,7 @@
       "type": "histogram",
       "queries": [
        {
-        "text": " from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"first_strain\"] == \"1\")\n  |> filter(fn: (r) => r[\"_field\"] == \"strainname\")\n  |> drop(columns: [\"country\", \"division\", \"first_strain\", \"measurement\",])\n\n // |> window(every: 1h)\n //  |> count()\n // |> duplicate(column: \"_stop\", as: \"_time\")\n // |> window(every: inf)\n ",
+        "text": "// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklisat\ninclude_fields = (v.exclude == \"0\")\n\n from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"first_strain\"] == \"1\")\n  |> filter(fn: (r) => r[\"_field\"] == \"strainname\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n\n ",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -768,6 +786,8 @@
       ],
       "xColumn": "_time",
       "fillColumns": [
+       "_start",
+       "_stop",
        "_field",
        "_measurement",
        "region"
@@ -790,7 +810,7 @@
       "type": "histogram",
       "queries": [
        {
-        "text": " from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"first_strain\"] == \"0\")\n  |> filter(fn: (r) => r[\"_field\"] == \"strainname\")\n  |> drop(columns: [\"country\", \"division\", \"first_strain\", \"measurement\",])\n\n // |> window(every: 1h)\n //  |> count()\n // |> duplicate(column: \"_stop\", as: \"_time\")\n // |> window(every: inf)\n ",
+        "text": "// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklisat\ninclude_fields = (v.exclude == \"0\")\n\n from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"first_strain\"] == \"0\")\n  |> filter(fn: (r) => r[\"_field\"] == \"strainname\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n\n ",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -811,36 +831,38 @@
       ],
       "colors": [
        {
-        "id": "fbc30c66-6507-439d-8c04-900c4f750a86",
+        "id": "7beabe17-c7a1-4a8a-8f3e-9501f0300e2b",
         "type": "scale",
-        "hex": "#FD7A5D",
-        "name": "Delorean",
+        "hex": "#31C0F6",
+        "name": "Nineteen Eighty Four",
         "value": 0
        },
        {
-        "id": "493c5e68-954a-45d3-8484-b021d582ac7a",
+        "id": "893859da-0f44-419d-841b-d459c497dfc9",
         "type": "scale",
-        "hex": "#5F1CF2",
-        "name": "Delorean",
+        "hex": "#A500A5",
+        "name": "Nineteen Eighty Four",
         "value": 0
        },
        {
-        "id": "cb2daca2-24c8-4752-93f3-928a15317ebc",
+        "id": "88416671-8662-43e5-9875-95bc9abcdc54",
         "type": "scale",
-        "hex": "#4CE09A",
-        "name": "Delorean",
+        "hex": "#FF7E27",
+        "name": "Nineteen Eighty Four",
         "value": 0
        }
       ],
       "xColumn": "_time",
       "fillColumns": [
+       "_start",
+       "_stop",
        "_field",
        "_measurement",
        "region"
       ],
       "xAxisLabel": "",
       "position": "stacked",
-      "binCount": 50,
+      "binCount": 30,
       "note": "",
       "showNoteWhenEmpty": false
      }
@@ -855,7 +877,7 @@
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"\"\"\"\ndrop_cols = [\"country\",\"division\", \"region\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  //|> keep(columns: [filter_field_name, \"_start\", \"_stop\", \"_time\", \"_value\", \"_field\"])\n  |> drop(columns: drop_cols)\n  |> window(every: 1h)\n  |> count()\n  |> duplicate(column: \"_stop\", as: \"_time\")\n  |> window(every: inf)\n",
+        "text": "// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklisat\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> window(every: 1h)\n  |> count()\n  |> duplicate(column: \"_stop\", as: \"_time\")\n  |> window(every: inf)\n",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -943,7 +965,7 @@
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "import \"strings\"\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"mutations\")\n  |> drop(columns: [\"country\", \"division\", \"first_strain\"])\n  |> aggregateWindow(\n      every: 24h,\n      fn: (column, tables=<-) => tables |> reduce(\n            identity: {s_mutations: 0.0, g_mutations: 0.0},\n            fn: (r, accumulator) => ({\n              s_mutations:\n                if strings.containsStr(v: r._value, substr: \"-D614G-\") then accumulator.s_mutations + 1.0\n                else accumulator.s_mutations + 0.0,\n              g_mutations:\n                if strings.containsStr(v: r._value, substr: \"--\") then accumulator.g_mutations + 1.0\n                else accumulator.g_mutations + 0.0\n            })\n        )\n    )\n  |> drop(columns: [\"g_mutations\"])\n  |> rename(columns: {s_mutations: \"_value\"})",
+        "text": "import \"strings\"\n\n// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklist\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"mutations\")\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n      every: 24h,\n      fn: (column, tables=<-) => tables |> reduce(\n            identity: {s_mutations: 0.0, g_mutations: 0.0},\n            fn: (r, accumulator) => ({\n              s_mutations:\n                if strings.containsStr(v: r._value, substr: \"-D614G-\") then accumulator.s_mutations + 1.0\n                else accumulator.s_mutations + 0.0,\n              g_mutations:\n                if strings.containsStr(v: r._value, substr: \"--\") then accumulator.g_mutations + 1.0\n                else accumulator.g_mutations + 0.0\n            })\n        )\n    )\n  |> drop(columns: [\"g_mutations\"])\n  |> rename(columns: {s_mutations: \"_value\"})",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -1032,7 +1054,7 @@
       "type": "gauge",
       "queries": [
        {
-        "text": "// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"\"\"\"\ndrop_cols = [\"country\",\"division\", \"region\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"first_strain\"] == \"1\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  //|> keep(columns: [filter_field_name, \"_start\", \"_stop\", \"_time\", \"_value\", \"_field\"])\n  |> drop(columns: drop_cols)\n\n   |> count()\n",
+        "text": "// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklisat\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"first_strain\"] == \"1\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> count()\n",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -1090,7 +1112,7 @@
       "type": "gauge",
       "queries": [
        {
-        "text": "// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"\"\"\"\ndrop_cols = [\"country\",\"division\", \"region\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"first_strain\"] == \"0\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  //|> keep(columns: [filter_field_name, \"_start\", \"_stop\", \"_time\", \"_value\", \"_field\"])\n  |> drop(columns: drop_cols)\n\n   |> count()\n",
+        "text": "// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklisat\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"first_strain\"] == \"0\")\n|> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n\n   |> count()\n",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -1147,7 +1169,7 @@
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "import \"math\"\n\n// list of divisions to filter\nfilter_values = [\"Asia\"]\n\n// filter by field name \nfilter_field_name = \"country\"\n//drop_cols = [\"country\",\"division\", \"first_strain\"]\ndrop_cols = [\"country\",\"division\", \"first_strain\"]\n\n// value flips the behavior from white list to blacklist\ninclude_fields = true\ncountry = v.filter_region\n\nt1 = from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"region\"] == country)\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n    every: 24h,\n    fn: count\n  )\nt2 = from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"deaths\")\n  |> filter(fn: (r) => r[\"_field\"] == \"positives\")\n  |> filter(fn: (r) => r[\"region\"] == country)\n  |> map(fn: (r) => ({ r with _value:  if r._value > 0 \n    then int(v:math.log(x: r._value) )\n    else 0}))\n  |> drop(columns: drop_cols)\n    |> sort(columns: [\"_time\"])\n    |> aggregateWindow(every: 24h, column: \"_value\",fn: sum)\n\nunion(tables: [t1, t2])\n  |> sort(columns: [\"_time\"], desc: false)\n \n\n \n\n\n\n\n\n\n\n    \n\n",
+        "text": "import \"math\"\n\n// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklisat\ninclude_fields = (v.exclude == \"0\")\n\nt1 = from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n    every: 24h,\n    fn: count\n  )\nt2 = from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"deaths\")\n  |> filter(fn: (r) => r[\"_field\"] == \"positives\")\n|> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> map(fn: (r) => ({ r with _value:  if r._value > 0 \n    then int(v:math.log(x: r._value) )\n    else 0}))\n  |> drop(columns: drop_cols)\n    |> sort(columns: [\"_time\"])\n    |> aggregateWindow(every: 24h, column: \"_value\",fn: sum)\n\nunion(tables: [t1, t2])\n  |> sort(columns: [\"_time\"], desc: false)\n \n\n \n\n\n\n\n\n\n\n    \n\n",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -1243,25 +1265,78 @@
     },
     "relationships": {
      "label": {
+      "data": [
+       {
+        "type": "label",
+        "id": "05baaeb1394df000"
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "05ba8608dd804000",
+    "type": "variable",
+    "attributes": {
+     "name": "exclude",
+     "arguments": {
+      "type": "map",
+      "values": {
+       "exclude": "1",
+       "include": "0"
+      }
+     },
+     "selected": [
+      "include"
+     ]
+    },
+    "relationships": {
+     "label": {
       "data": []
      }
     }
    },
    {
-    "id": "05ba7cf6bdc04000",
+    "id": "05ba865f63c04000",
     "type": "variable",
     "attributes": {
-     "name": "filter_region",
+     "name": "filter_field_name",
+     "arguments": {
+      "type": "map",
+      "values": {
+       "country": "country",
+       "division": "division",
+       "region": "region"
+      }
+     },
+     "selected": [
+      "region"
+     ]
+    },
+    "relationships": {
+     "label": {
+      "data": []
+     }
+    }
+   },
+   {
+    "id": "05ba86cc01404000",
+    "type": "variable",
+    "attributes": {
+     "name": "filter_values",
      "arguments": {
       "type": "map",
       "values": {
        "Africa": "Africa",
        "Asia": "Asia",
-       "NAa": "North-America"
+       "Europe": "Europe",
+       "Oceania": "Oceania",
+       "US": "USA",
+       "none": ""
       }
      },
      "selected": [
-      "us"
+      "Asia"
      ]
     },
     "relationships": {
