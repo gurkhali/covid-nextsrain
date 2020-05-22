@@ -85,6 +85,14 @@
       {
        "type": "variable",
        "id": "05ba86cc01404000"
+      },
+      {
+       "type": "variable",
+       "id": "05bb23aeb031e000"
+      },
+      {
+       "type": "variable",
+       "id": "05bb2b044731e000"
       }
      ]
     }
@@ -107,7 +115,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 7,
+     "y": 9,
      "w": 12,
      "h": 4
     },
@@ -143,7 +151,7 @@
     "type": "cell",
     "attributes": {
      "x": 6,
-     "y": 19,
+     "y": 21,
      "w": 6,
      "h": 4
     },
@@ -161,7 +169,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 19,
+     "y": 21,
      "w": 6,
      "h": 4
     },
@@ -179,7 +187,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 27,
+     "y": 29,
      "w": 12,
      "h": 4
     },
@@ -197,7 +205,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 15,
+     "y": 17,
      "w": 6,
      "h": 4
     },
@@ -215,7 +223,7 @@
     "type": "cell",
     "attributes": {
      "x": 6,
-     "y": 15,
+     "y": 17,
      "w": 6,
      "h": 4
     },
@@ -233,7 +241,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 11,
+     "y": 13,
      "w": 6,
      "h": 4
     },
@@ -251,7 +259,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 23,
+     "y": 25,
      "w": 12,
      "h": 4
     },
@@ -269,7 +277,7 @@
     "type": "cell",
     "attributes": {
      "x": 6,
-     "y": 11,
+     "y": 13,
      "w": 3,
      "h": 4
     },
@@ -287,7 +295,7 @@
     "type": "cell",
     "attributes": {
      "x": 9,
-     "y": 11,
+     "y": 13,
      "w": 3,
      "h": 4
     },
@@ -307,7 +315,7 @@
      "x": 0,
      "y": 4,
      "w": 12,
-     "h": 3
+     "h": 5
     },
     "relationships": {
      "view": {
@@ -389,7 +397,7 @@
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklist\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n    every: 24h,\n    fn: count\n  )",
+        "text": "// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// only drop if asked\n//drop_cols = if v.drop_cols == \"1\" then drop_cols_values else []\n\n// value flips the behavior from white list to blacklist\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n    every: 24h,\n    fn: count\n  )",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -1164,12 +1172,12 @@
     "type": "view",
     "id": "05ba7b9be9404000",
     "attributes": {
-     "name": "Deaths vs Strains",
+     "name": "Deaths/Infections vs Strains",
      "properties": {
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "import \"math\"\n\n// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklisat\ninclude_fields = (v.exclude == \"0\")\n\nt1 = from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n    every: 24h,\n    fn: count\n  )\nt2 = from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"deaths\")\n  |> filter(fn: (r) => r[\"_field\"] == \"positives\")\n|> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> map(fn: (r) => ({ r with _value:  if r._value > 0 \n    then int(v:math.log(x: r._value) )\n    else 0}))\n  |> drop(columns: drop_cols)\n    |> sort(columns: [\"_time\"])\n    |> aggregateWindow(every: 24h, column: \"_value\",fn: sum)\n\nunion(tables: [t1, t2])\n  |> sort(columns: [\"_time\"], desc: false)\n \n\n \n\n\n\n\n\n\n\n    \n\n",
+        "text": "import \"math\"\n\n// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols_values = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// only drop if asked\ndrop_cols = if v.drop_cols == \"1\" then drop_cols_values else []\n\n// value flips the behavior from white list to blacklisat\ninclude_fields = (v.exclude == \"0\")\n\nt1 = from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n    every: 24h,\n    fn: count\n  )\nt2 = from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement_Death_Or_Infection)\n  |> filter(fn: (r) => r[\"_field\"] == \"positives\")\n|> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> map(fn: (r) => ({ r with _value:  if r._value > 0 \n    then int(v:math.log(x: r._value) )\n    else 0}))\n  |> drop(columns: drop_cols)\n    |> sort(columns: [\"_time\"])\n    |> aggregateWindow(every: 24h, column: \"_value\",fn: sum)\n\nunion(tables: [t1, t2])\n  |> sort(columns: [\"_time\"], desc: false)\n \n\n \n\n\n\n\n\n\n\n    \n\n",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -1205,36 +1213,36 @@
          "",
          ""
         ],
-        "label": "",
+        "label": "Count",
         "prefix": "",
         "suffix": "",
-        "base": "10",
+        "base": "",
         "scale": "linear"
        }
       },
       "type": "xy",
       "legend": {},
-      "geom": "monotoneX",
+      "geom": "line",
       "colors": [
        {
-        "id": "7e5a7999-098d-4872-a81f-33e16b48d68b",
+        "id": "daecbfce-f4f9-4454-a105-a9279f4026dc",
         "type": "scale",
-        "hex": "#FD7A5D",
-        "name": "Delorean",
+        "hex": "#31C0F6",
+        "name": "Nineteen Eighty Four",
         "value": 0
        },
        {
-        "id": "c2b25207-2dbc-468e-accb-2a50147f21fe",
+        "id": "ec3b9a47-da3a-40b8-bd7e-38ba6e01a10e",
         "type": "scale",
-        "hex": "#5F1CF2",
-        "name": "Delorean",
+        "hex": "#A500A5",
+        "name": "Nineteen Eighty Four",
         "value": 0
        },
        {
-        "id": "d618294e-90cb-4105-adcc-41aaa867feff",
+        "id": "cb8a1c51-00d4-47d0-8fcd-2f312248d5b5",
         "type": "scale",
-        "hex": "#4CE09A",
-        "name": "Delorean",
+        "hex": "#FF7E27",
+        "name": "Nineteen Eighty Four",
         "value": 0
        }
       ],
@@ -1346,8 +1354,52 @@
       "data": []
      }
     }
+   },
+   {
+    "id": "05bb23aeb031e000",
+    "type": "variable",
+    "attributes": {
+     "name": "Measurement_Death_Or_Infection",
+     "arguments": {
+      "type": "map",
+      "values": {
+       "Death Report": "deaths",
+       "Infection Reports": "infections"
+      }
+     },
+     "selected": [
+      "Death Report"
+     ]
+    },
+    "relationships": {
+     "label": {
+      "data": []
+     }
+    }
+   },
+   {
+    "id": "05bb2b044731e000",
+    "type": "variable",
+    "attributes": {
+     "name": "drop_cols",
+     "arguments": {
+      "type": "map",
+      "values": {
+       "Drop": "1",
+       "NoDrop": "0"
+      }
+     },
+     "selected": [
+      "Drop"
+     ]
+    },
+    "relationships": {
+     "label": {
+      "data": []
+     }
+    }
    }
   ]
  },
  "labels": []
-}
+} 
