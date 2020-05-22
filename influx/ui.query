@@ -862,7 +862,7 @@
       ],
       "xAxisLabel": "",
       "position": "stacked",
-      "binCount": 30,
+      "binCount": 50,
       "note": "",
       "showNoteWhenEmpty": false
      }
@@ -965,7 +965,7 @@
       "shape": "chronograf-v2",
       "queries": [
        {
-        "text": "import \"strings\"\n\n// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklist\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"mutations\")\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n      every: 24h,\n      fn: (column, tables=<-) => tables |> reduce(\n            identity: {s_mutations: 0.0, g_mutations: 0.0},\n            fn: (r, accumulator) => ({\n              s_mutations:\n                if strings.containsStr(v: r._value, substr: \"-D614G-\") then accumulator.s_mutations + 1.0\n                else accumulator.s_mutations + 0.0,\n              g_mutations:\n                if strings.containsStr(v: r._value, substr: \"--\") then accumulator.g_mutations + 1.0\n                else accumulator.g_mutations + 0.0\n            })\n        )\n    )\n  |> drop(columns: [\"g_mutations\"])\n  |> rename(columns: {s_mutations: \"_value\"})",
+        "text": "import \"strings\"\n\n// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklist\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"mutations\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n  |> drop(columns: drop_cols)\n  |> aggregateWindow(\n      every: 24h,\n      fn: (column, tables=<-) => tables |> reduce(\n            identity: {s_mutations: 0.0, g_mutations: 0.0},\n            fn: (r, accumulator) => ({\n              s_mutations:\n                if strings.containsStr(v: r._value, substr: \"-D614G-\") then accumulator.s_mutations + 1.0\n                else accumulator.s_mutations + 0.0,\n              g_mutations:\n                if strings.containsStr(v: r._value, substr: \"--\") then accumulator.g_mutations + 1.0\n                else accumulator.g_mutations + 0.0\n            })\n        )\n    )\n  |> drop(columns: [\"g_mutations\"])\n  |> rename(columns: {s_mutations: \"_value\"})",
         "editMode": "advanced",
         "name": "",
         "builderConfig": {
@@ -1330,7 +1330,9 @@
        "Africa": "Africa",
        "Asia": "Asia",
        "Europe": "Europe",
+       "North-America": "North-America",
        "Oceania": "Oceania",
+       "South-America": "South-America",
        "US": "USA",
        "none": ""
       }
