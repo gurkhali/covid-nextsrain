@@ -46,6 +46,7 @@ Africa,AF,"Chad, Republic of",TD,TCD,148
 South America,SA,"Chile, Republic of",CL,CHL,152
 Asia,AS,"China, People's Republic of",CN,CHN,156
 Asia,AS,Taiwan*,TW,TWN,158
+Asia,AS,Taiwan,TW,TWN,158
 Asia,AS,Christmas Island,CX,CXR,162
 Asia,AS,Cocos (Keeling) Islands,CC,CCK,166
 South America,SA,"Colombia, Republic of",CO,COL,170
@@ -60,6 +61,7 @@ North America,NA,"Cuba, Republic of",CU,CUB,192
 Europe,EU,"Cyprus, Republic of",CY,CYP,196
 Asia,AS,"Cyprus, Republic of",CY,CYP,196
 Europe,EU,Czechia,CZ,CZE,203
+Europe,EU,Czech-Republic,CZ,CZE,203
 Africa,AF,"Benin, Republic of",BJ,BEN,204
 Europe,EU,"Denmark, Kingdom of",DK,DNK,208
 North America,NA,"Dominica, Commonwealth of",DM,DMA,212
@@ -103,6 +105,7 @@ Antarctica,AN,Heard Island and McDonald Islands,HM,HMD,334
 Europe,EU,Holy See,VA,VAT,336
 North America,NA,"Honduras, Republic of",HN,HND,340
 Asia,AS,"Hong Kong, Special Administrative Region of China",HK,HKG,344
+Asia,AS,"Hong-Kong, Special Administrative Region of China",HK,HKG,344
 Europe,EU,"Hungary, Republic of",HU,HUN,348
 Europe,EU,"Iceland, Republic of",IS,ISL,352
 Asia,AS,"India, Republic of",IN,IND,356
@@ -121,6 +124,7 @@ Asia,AS,"Jordan, Hashemite Kingdom of",JO,JOR,400
 Africa,AF,"Kenya, Republic of",KE,KEN,404
 Asia,AS,"Korea, South",KP,PRK,408
 Asia,AS,"Korea, Republic of",KR,KOR,410
+Asia,AS,"Republic-of-Korea",KR,KOR,410
 Asia,AS,"Kuwait, State of",KW,KWT,414
 Asia,AS,Kyrgyzstan,KG,KGZ,417
 Asia,AS,Laos,LA,LAO,418
@@ -161,8 +165,10 @@ North America,NA,Aruba,AW,ABW,533
 North America,NA,Sint Maarten (Netherlands),SX,SXM,534
 North America,NA,"Bonaire, Sint Eustatius and Saba",BQ,BES,535
 Oceania,OC,New Caledonia,NC,NCL,540
+Oceania,OC,New-Caledonia,NC,NCL,540
 Oceania,OC,"Vanuatu, Republic of",VU,VUT,548
 Oceania,OC,New Zealand,NZ,NZL,554
+Oceania,OC,New-Zealand,NZ,NZL,554
 North America,NA,"Nicaragua, Republic of",NI,NIC,558
 Africa,AF,"Niger, Republic of",NE,NER,562
 Africa,AF,"Nigeria, Federal Republic of",NG,NGA,566
@@ -203,6 +209,7 @@ North America,NA,Saint Vincent and the Grenadines,VC,VCT,670
 Europe,EU,"San Marino, Republic of",SM,SMR,674
 Africa,AF,"Sao Tome and Principe",ST,STP,678
 Asia,AS,"Saudi Arabia, Kingdom of",SA,SAU,682
+Asia,AS,"Saudi-Arabia, Kingdom of",SA,SAU,682
 Africa,AF,"Senegal, Republic of",SN,SEN,686
 Europe,EU,"Serbia, Republic of",RS,SRB,688
 Europe,EU,"Kosovo, Republic of",RS,SRB,688
@@ -248,6 +255,7 @@ Europe,EU,"Jersey, Bailiwick of",JE,JEY,832
 Europe,EU,Isle of Man,IM,IMN,833
 Africa,AF,"Tanzania, United Republic of",TZ,TZA,834
 North America,NA,US,US,USA,840
+North America,NA,United States,US,USA,840
 North America,NA,Virgin Islands,VI,VIR,850
 Africa,AF,Burkina Faso,BF,BFA,854
 South America,SA,"Uruguay, Eastern Republic of",UY,URY,858
