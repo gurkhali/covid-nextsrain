@@ -147,11 +147,11 @@ def write_strains(file_name, out_file):
 
 out_file = open('../output/chronograf.txt', 'w')
 
-#write_strains(file_name_strains, out_file)
+write_strains(file_name_strains, out_file)
 
-#write_hopkins_data("infections", file_name_infections, 
-#        file_name_countries,  out_file)
-#write_hopkins_data("deaths", file_name_deaths, 
-#        file_name_countries,  out_file)
+write_hopkins_data("infections", file_name_infections, 
+        file_name_countries,  out_file)
+write_hopkins_data("deaths", file_name_deaths, 
+        file_name_countries,  out_file)
 write_apple_data("moility", file_name_apple, 
         file_name_countries,  out_file)
