@@ -5,6 +5,8 @@ from csv import DictReader
 file_name_countries = '../data/countries.csv'
 file_name_infections = '../data/infections.csv'
 file_name_deaths = '../data/deaths.csv'
+file_name_us_infections = '../data/us_infections.csv'
+file_name_us_deaths = '../data/us_deaths.csv'
 file_name_apple = '../data/apple_mobility.csv'
 file_name_strains = '../output/data.csv'
 
@@ -74,6 +76,39 @@ def write_hopkins_data(measurement, file_name_input,
                     "region=" + cn + ""
                     " " +
                     "positives={0} {1}\n".format(value, dt))
+
+def write_hopkins_us_data(measurement, start_col, file_name_input, 
+        file_name_countries,  out_file):
+    co = build_continent(file_name_countries)
+
+    infections = []
+
+    df = pd.read_csv(file_name_input)
+    for v in df.values:
+        c = str(v[5])
+        s = str(v[6])
+
+        c = c.replace(' ', '-')
+        s = s.replace(' ', '-')
+
+        last_value = 0
+        for i in range(start_col, len(v)):
+            if v[i] >= last_value:
+                value = v[i] - last_value
+                last_value = v[i]
+            else:
+                value = 0
+
+            dt = datetime.datetime.strptime(df.columns[i],
+                    '%m/%d/%y').strftime("%s") + "000000000"
+
+            out_file.write(measurement + "," +
+                    "county="+ c + ","
+                    "state="+ s + ","
+                    "region=United-States"
+                    " " +
+                    "positives={0} {1}\n".format(value, dt))
+
 
 def apple_mobility_tags(fields, continent):
     geo_type = fields[0]
@@ -147,8 +182,11 @@ def write_strains(file_name, out_file):
 
 out_file = open('../output/chronograf.txt', 'w')
 
-write_strains(file_name_strains, out_file)
-
+#write_strains(file_name_strains, out_file)
+write_hopkins_us_data("us_infections", 11, file_name_us_infections, 
+        file_name_countries,  out_file)
+write_hopkins_us_data("us_deaths", 12, file_name_us_deaths, 
+        file_name_countries,  out_file)
 write_hopkins_data("infections", file_name_infections, 
         file_name_countries,  out_file)
 write_hopkins_data("deaths", file_name_deaths, 
