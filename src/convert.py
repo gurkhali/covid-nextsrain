@@ -104,7 +104,7 @@ def write_hopkins_us_data(measurement, start_col, file_name_input,
 
             out_file.write(measurement + "," +
                     "county="+ c + ","
-                    "state="+ s + ","
+                    "division="+ s + ","
                     "region=United-States"
                     " " +
                     "positives={0} {1}\n".format(value, dt))
