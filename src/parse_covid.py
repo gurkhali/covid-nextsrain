@@ -11,8 +11,8 @@ unique_id = 0
 # constants
 NUM_PARENTS = 10 #number of parents to track
 OUT_FORMAT = ["epocTime", "gisaid", "name", "division", "country", "region", 
-        "mutations", "divergence", "strain", "strainname", "first_strain",
-        "strain_division", "branch_ids", "branch_id"]
+        "mutations", "mutation_count","divergence", "strain", "strainname",
+        "first_strain", "strain_division", "branch_ids", "branch_id"]
 
 def get_next_id(prefix):
     global unique_id
@@ -67,11 +67,10 @@ class Branch:
         self.generation = 1
         
         self.sequences = []
-        #self.mutations = []
+        self.mutations_all = []
+        self.mutations_self = []
         if parent:
-            self.mutations = parent.mutations[:]
-        else:
-            self.mutations = []
+            self.mutations_all = parent.mutations_all[:]
 
         self.date = None
 
@@ -105,10 +104,12 @@ class Branch:
         seq = Sequence(name, date, self, gisaid)
         
         # transfer and add mutations 
-        seq.mutations = self.mutations[:]
+        seq.mutations_all = self.mutations_all[:]
+        seq.mutations_self = self.mutations_self[:]
         m = get_mutations(node)
         if m:
-            seq.mutations.append(m)
+            seq.mutations_self.append(m)
+            seq.mutations_all.append(m)
 
         # divergence
         if 'div' in node['node_attrs']:
@@ -187,7 +188,8 @@ class Sequence:
         self.claude = None
         self.location = None
         self.gisaid = gisaid
-        self.mutations = []
+        self.mutations_self = []
+        self.mutations_all = []
         self.age = None
         self.sex = None
         self.node = None
@@ -236,21 +238,25 @@ class Sequence:
 
     # special handlers
     def to_list_mutations(self):
-        ret = str(self.mutations).translate(str.maketrans({':' : '-', 
+        ret = str(self.mutations_all).translate(str.maketrans({':' : '-', 
             ',' : '-' ,'\'' : '' ,' ' : '' ,'[' : '' ,']' : '' ,
             '{' : '','}' : ''}))
         return ret
 
-    # conver object to list type based on format
-    def to_list(self, format=OUT_FORMAT):
+    # conver object to csv type based on format
+    def to_csv(self, format=OUT_FORMAT):
         ret = []
         excludes = ['name', 'mutations', 'divergence', 'first_strain']
         
         for f in format:
             try:
-                # handle mutations differently
+                # handle mutations types differently
                 if f == "mutations":
                     v = self.to_list_mutations()
+                if f == "mutation_count":
+                    key = str(self.mutations_self).count(':')
+                    val = str(self.mutations_self).count("'")
+                    v = val / 2 - key
                 elif f == "branch_id":
                     if self.branch:
                         v = self.branch.id
@@ -293,7 +299,7 @@ def add_branch_node(node, parent, flat_list):
         parent.branches.append(branch)
         
         # store mutation
-        branch.mutations.append(branch_mutation)
+        branch.mutations_self.append(branch_mutation)
     else:
         # map to the parent branch
         branch = parent
@@ -330,7 +336,7 @@ def write_csv(file, headers, output):
         # skip if not a sample
         if not o.gisaid:
             continue
-        output = o.to_list()
+        output = o.to_csv()
         writer.writerow(output)
 
 # build timeline
@@ -392,7 +398,7 @@ def main(args):
 
     #write_lineage(args.outfile + ".lineage", flat_list)
 
-    write_mutation_group(args.outfile + ".mut", flat_list)
+    #write_mutation_group(args.outfile + ".mut", flat_list)
 
 # # # # # # # # # # # # 
 parser = argparse.ArgumentParser()

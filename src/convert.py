@@ -173,7 +173,8 @@ def write_strains(file_name, out_file):
              + "value=1,"
              + "name=\"" + str(df["name"][d]) + "\","
 
-             + "mutations=\"" + str(df["mutations"][d]) + "\""
+             + "mutations=\"" + str(df["mutations"][d]) + "\","
+             + "mutation_count=" + str(df["mutation_count"][d]) + ""
              + " " + str(df["epocTime"][d]) for d in range(len(df))]
 
     for item in strains:
@@ -182,7 +183,7 @@ def write_strains(file_name, out_file):
 
 out_file = open('../output/chronograf.txt', 'w')
 
-#write_strains(file_name_strains, out_file)
+write_strains(file_name_strains, out_file)
 write_hopkins_us_data("us_infections", 11, file_name_us_infections, 
         file_name_countries,  out_file)
 write_hopkins_us_data("us_deaths", 12, file_name_us_deaths, 
