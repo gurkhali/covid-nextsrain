@@ -253,10 +253,15 @@ class Sequence:
                 # handle mutations types differently
                 if f == "mutations":
                     v = self.to_list_mutations()
-                if f == "mutation_count":
+                elif f == "mutation_count":
                     key = str(self.mutations_self).count(':')
                     val = str(self.mutations_self).count("'")
                     v = val / 2 - key
+                    
+                    # ignore mutations that appear to have "-" as they don't
+                    # appear to have the right values
+                    if str(self.mutations_self).count('-'):
+                        v = 0
                 elif f == "branch_id":
                     if self.branch:
                         v = self.branch.id
@@ -300,6 +305,7 @@ def add_branch_node(node, parent, flat_list):
         
         # store mutation
         branch.mutations_self.append(branch_mutation)
+        branch.mutations_all.append(branch_mutation)
     else:
         # map to the parent branch
         branch = parent
