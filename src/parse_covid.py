@@ -4,6 +4,7 @@ import operator
 import argparse
 import datetime
 import json
+import hashlib
 
 # branch id generator
 unique_id = 0
@@ -263,10 +264,9 @@ class Sequence:
                     if str(self.mutations_self).count('-'):
                         v = 0
                 elif f == "branch_id":
-                    if self.branch:
-                        v = self.branch.id
-                    else:
-                        v = "None"
+                    m = hashlib.md5()
+                    m.update(self.to_list_mutations().encode('utf-8'))
+                    v = m.hexdigest()
                 elif f == "branch_ids":
                     if self.branch:
                         v = self.get_parent_branches()
@@ -349,9 +349,10 @@ def write_csv(file, headers, output):
 def parse_json(file_name, flat_list, region_geo, country_geo):
     # root node
     root = Branch(None, None)
-
     with open(file_name) as json_file:      
         data = json.load(json_file) 
+
+    root.node = data['tree']
 
     # add region geo
     add_geo('region', data['meta']['geo_resolutions'], 
@@ -361,7 +362,7 @@ def parse_json(file_name, flat_list, region_geo, country_geo):
             country_geo)
 
     # genome nodem
-    add_branch_node(data['tree'], root, flat_list)
+    add_branch_node(root.node,  root, flat_list)
      
     return root
 
