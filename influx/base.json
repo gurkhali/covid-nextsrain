@@ -65,6 +65,10 @@
       {
        "type": "cell",
        "id": "05ba7b9be9404000"
+      },
+      {
+       "type": "cell",
+       "id": "05c1979c8f840000"
       }
      ]
     },
@@ -151,7 +155,7 @@
     "type": "cell",
     "attributes": {
      "x": 6,
-     "y": 21,
+     "y": 26,
      "w": 6,
      "h": 4
     },
@@ -169,7 +173,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 21,
+     "y": 26,
      "w": 6,
      "h": 4
     },
@@ -187,7 +191,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 29,
+     "y": 34,
      "w": 12,
      "h": 4
     },
@@ -205,7 +209,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 17,
+     "y": 22,
      "w": 6,
      "h": 4
     },
@@ -223,7 +227,7 @@
     "type": "cell",
     "attributes": {
      "x": 6,
-     "y": 17,
+     "y": 22,
      "w": 6,
      "h": 4
     },
@@ -241,7 +245,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 13,
+     "y": 18,
      "w": 6,
      "h": 4
     },
@@ -259,7 +263,7 @@
     "type": "cell",
     "attributes": {
      "x": 0,
-     "y": 25,
+     "y": 30,
      "w": 12,
      "h": 4
     },
@@ -277,7 +281,7 @@
     "type": "cell",
     "attributes": {
      "x": 6,
-     "y": 13,
+     "y": 18,
      "w": 3,
      "h": 4
     },
@@ -295,7 +299,7 @@
     "type": "cell",
     "attributes": {
      "x": 9,
-     "y": 13,
+     "y": 18,
      "w": 3,
      "h": 4
     },
@@ -322,6 +326,24 @@
       "data": {
        "type": "view",
        "id": "05ba7b9be9404000"
+      }
+     }
+    }
+   },
+   {
+    "id": "05c1979c8f840000",
+    "type": "cell",
+    "attributes": {
+     "x": 0,
+     "y": 13,
+     "w": 12,
+     "h": 5
+    },
+    "relationships": {
+     "view": {
+      "data": {
+       "type": "view",
+       "id": "05c1979c8f840000"
       }
      }
     }
@@ -1252,6 +1274,64 @@
       "yColumn": "_value",
       "shadeBelow": false,
       "position": "overlaid",
+      "timeFormat": ""
+     }
+    }
+   },
+   {
+    "type": "view",
+    "id": "05c1979c8f840000",
+    "attributes": {
+     "name": "Divergence by Region ",
+     "properties": {
+      "shape": "chronograf-v2",
+      "type": "heatmap",
+      "queries": [
+       {
+        "text": "// Values to filter for\nfilter_values = [v.filter_values]\n\n// filtering field name\nfilter_field_name = v.filter_field_name\n\n// set drop columns\ndrop_cols = \n     if filter_field_name == \"country\"\n        then [\"region\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"region\"\n        then [\"country\",\"division\", \"first_strain\"]\n      else if filter_field_name == \"division\"\n        then [\"country\",\"region\", \"first_strain\"]\n      else []\n\n// value flips the behavior from white list to blacklisat\ninclude_fields = (v.exclude == \"0\")\n\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement)\n  |> filter(fn: (r) => r[\"_field\"] == \"divergence\")\n  |> filter(fn: (r) =>\n      if filter_field_name == \"country\"\n        then contains(value: r[\"country\"], set: filter_values) == include_fields\n      else if filter_field_name == \"region\"\n        then contains(value: r[\"region\"], set: filter_values) == include_fields\n      else if filter_field_name == \"division\"\n        then contains(value: r[\"division\"], set: filter_values) == include_fields\n      else true\n  )\n|> drop(columns: drop_cols)\n    \n  ",
+        "editMode": "advanced",
+        "name": "",
+        "builderConfig": {
+         "buckets": [],
+         "tags": [
+          {
+           "key": "_measurement",
+           "values": [],
+           "aggregateFunctionType": "filter"
+          }
+         ],
+         "functions": [],
+         "aggregateWindow": {
+          "period": "auto"
+         }
+        }
+       }
+      ],
+      "colors": [
+       "#000004",
+       "#110a30",
+       "#320a5e",
+       "#57106e",
+       "#781c6d",
+       "#9a2865",
+       "#bc3754",
+       "#d84c3e",
+       "#ed6925",
+       "#f98e09",
+       "#fbb61a",
+       "#f4df53"
+      ],
+      "binSize": 10,
+      "xColumn": "_time",
+      "yColumn": "_value",
+      "xAxisLabel": "",
+      "yAxisLabel": "",
+      "xPrefix": "",
+      "xSuffix": "",
+      "yPrefix": "",
+      "ySuffix": "",
+      "note": "",
+      "showNoteWhenEmpty": false,
       "timeFormat": ""
      }
     }

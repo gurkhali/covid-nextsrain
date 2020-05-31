@@ -1,0 +1,950 @@
+{
+ "meta": {
+  "version": "1",
+  "type": "dashboard",
+  "name": "Covid Video-Template",
+  "description": "template created from dashboard: Covid Video"
+ },
+ "content": {
+  "data": {
+   "type": "dashboard",
+   "attributes": {
+    "name": "Covid Video",
+    "description": ""
+   },
+   "relationships": {
+    "label": {
+     "data": []
+    },
+    "cell": {
+     "data": [
+      {
+       "type": "cell",
+       "id": "05c5ca25afeb2000"
+      },
+      {
+       "type": "cell",
+       "id": "05c5cb09106b2000"
+      },
+      {
+       "type": "cell",
+       "id": "05c5ce04376b2000"
+      },
+      {
+       "type": "cell",
+       "id": "05c5ce8cadeb2000"
+      },
+      {
+       "type": "cell",
+       "id": "05c5d031b26b2000"
+      },
+      {
+       "type": "cell",
+       "id": "05c5d2061f2b2000"
+      },
+      {
+       "type": "cell",
+       "id": "05c62497bd2f1000"
+      },
+      {
+       "type": "cell",
+       "id": "05c627a10daf1000"
+      }
+     ]
+    },
+    "variable": {
+     "data": [
+      {
+       "type": "variable",
+       "id": "05bb23aeb031e000"
+      },
+      {
+       "type": "variable",
+       "id": "05c5d46875eb2000"
+      },
+      {
+       "type": "variable",
+       "id": "05c62845682f1000"
+      }
+     ]
+    }
+   }
+  },
+  "included": [
+   {
+    "id": "05c5ca25afeb2000",
+    "type": "cell",
+    "attributes": {
+     "x": 0,
+     "y": 14,
+     "w": 12,
+     "h": 3
+    },
+    "relationships": {
+     "view": {
+      "data": {
+       "type": "view",
+       "id": "05c5ca25afeb2000"
+      }
+     }
+    }
+   },
+   {
+    "id": "05c5cb09106b2000",
+    "type": "cell",
+    "attributes": {
+     "x": 0,
+     "y": 3,
+     "w": 12,
+     "h": 3
+    },
+    "relationships": {
+     "view": {
+      "data": {
+       "type": "view",
+       "id": "05c5cb09106b2000"
+      }
+     }
+    }
+   },
+   {
+    "id": "05c5ce04376b2000",
+    "type": "cell",
+    "attributes": {
+     "x": 0,
+     "y": 17,
+     "w": 12,
+     "h": 3
+    },
+    "relationships": {
+     "view": {
+      "data": {
+       "type": "view",
+       "id": "05c5ce04376b2000"
+      }
+     }
+    }
+   },
+   {
+    "id": "05c5ce8cadeb2000",
+    "type": "cell",
+    "attributes": {
+     "x": 0,
+     "y": 10,
+     "w": 12,
+     "h": 2
+    },
+    "relationships": {
+     "view": {
+      "data": {
+       "type": "view",
+       "id": "05c5ce8cadeb2000"
+      }
+     }
+    }
+   },
+   {
+    "id": "05c5d031b26b2000",
+    "type": "cell",
+    "attributes": {
+     "x": 0,
+     "y": 20,
+     "w": 12,
+     "h": 3
+    },
+    "relationships": {
+     "view": {
+      "data": {
+       "type": "view",
+       "id": "05c5d031b26b2000"
+      }
+     }
+    }
+   },
+   {
+    "id": "05c5d2061f2b2000",
+    "type": "cell",
+    "attributes": {
+     "x": 0,
+     "y": 0,
+     "w": 12,
+     "h": 3
+    },
+    "relationships": {
+     "view": {
+      "data": {
+       "type": "view",
+       "id": "05c5d2061f2b2000"
+      }
+     }
+    }
+   },
+   {
+    "id": "05c62497bd2f1000",
+    "type": "cell",
+    "attributes": {
+     "x": 0,
+     "y": 12,
+     "w": 12,
+     "h": 2
+    },
+    "relationships": {
+     "view": {
+      "data": {
+       "type": "view",
+       "id": "05c62497bd2f1000"
+      }
+     }
+    }
+   },
+   {
+    "id": "05c627a10daf1000",
+    "type": "cell",
+    "attributes": {
+     "x": 0,
+     "y": 6,
+     "w": 12,
+     "h": 4
+    },
+    "relationships": {
+     "view": {
+      "data": {
+       "type": "view",
+       "id": "05c627a10daf1000"
+      }
+     }
+    }
+   },
+   {
+    "type": "view",
+    "id": "05c5ca25afeb2000",
+    "attributes": {
+     "name": "Unique Strains",
+     "properties": {
+      "shape": "chronograf-v2",
+      "type": "histogram",
+      "queries": [
+       {
+        "text": "from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"strains\")\n  |> filter(fn: (r) => r[\"_field\"] == \"mutations\")\n  |> drop(columns: [\"country\", \"division\", \"first_strain\"])\n \n |> unique()",
+        "editMode": "advanced",
+        "name": "",
+        "builderConfig": {
+         "buckets": [],
+         "tags": [
+          {
+           "key": "_measurement",
+           "values": [],
+           "aggregateFunctionType": "filter"
+          }
+         ],
+         "functions": [],
+         "aggregateWindow": {
+          "period": "auto"
+         }
+        }
+       }
+      ],
+      "colors": [
+       {
+        "id": "01aba4e5-0da8-4c4b-940c-fee873767cf2",
+        "type": "scale",
+        "hex": "#31C0F6",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "25cf7ae5-8879-4120-9985-76bff29714b7",
+        "type": "scale",
+        "hex": "#A500A5",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "7fdfda0a-a469-45ee-9542-b7ca34ea26fe",
+        "type": "scale",
+        "hex": "#FF7E27",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       }
+      ],
+      "xColumn": "_time",
+      "fillColumns": [
+       "_start",
+       "_stop",
+       "_field",
+       "_measurement",
+       "region"
+      ],
+      "xAxisLabel": "",
+      "position": "stacked",
+      "binCount": 30,
+      "note": "",
+      "showNoteWhenEmpty": false
+     }
+    }
+   },
+   {
+    "type": "view",
+    "id": "05c5cb09106b2000",
+    "attributes": {
+     "name": "Unique Strains (Region)",
+     "properties": {
+      "shape": "chronograf-v2",
+      "queries": [
+       {
+        "text": "from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"strains\")\n  |> filter(fn: (r) => r[\"_field\"] == \"branch_id\")\n  |> filter(fn: (r) => r[\"region\"] == v.Region)\n  |> drop(columns: [\"country\", \"division\", \"first_strain\"])\n\n  |> unique(column: \"_value\")\n  |> group(columns: [\"region\"])\n  |> aggregateWindow(every: 24h, column: \"_value\", fn: count)\n\n  \n",
+        "editMode": "advanced",
+        "name": "",
+        "builderConfig": {
+         "buckets": [],
+         "tags": [
+          {
+           "key": "_measurement",
+           "values": [],
+           "aggregateFunctionType": "filter"
+          }
+         ],
+         "functions": [],
+         "aggregateWindow": {
+          "period": "auto"
+         }
+        }
+       }
+      ],
+      "axes": {
+       "x": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       },
+       "y": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "Samples",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       }
+      },
+      "type": "xy",
+      "legend": {},
+      "geom": "line",
+      "colors": [
+       {
+        "id": "66889470-5a21-46c7-95d4-b7c33edae55e",
+        "type": "scale",
+        "hex": "#31C0F6",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "552779a3-749d-457c-a961-df71c535d5a8",
+        "type": "scale",
+        "hex": "#A500A5",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "273f014b-c4ff-4fa1-8177-c2d4c42d6412",
+        "type": "scale",
+        "hex": "#FF7E27",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       }
+      ],
+      "note": "",
+      "showNoteWhenEmpty": false,
+      "xColumn": "_time",
+      "yColumn": "_value",
+      "shadeBelow": false,
+      "position": "overlaid",
+      "timeFormat": ""
+     }
+    }
+   },
+   {
+    "type": "view",
+    "id": "05c5ce04376b2000",
+    "attributes": {
+     "name": "Infections (All Regions)",
+     "properties": {
+      "shape": "chronograf-v2",
+      "queries": [
+       {
+        "text": "from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"infections\")\n  |> filter(fn: (r) => r[\"_field\"] == \"positives\")\n  |> group(columns: [\"region\"])\n  |> aggregateWindow(every: 24h, fn: sum)\n  |> yield(name: \"sum\")",
+        "editMode": "advanced",
+        "name": "",
+        "builderConfig": {
+         "buckets": [],
+         "tags": [
+          {
+           "key": "_measurement",
+           "values": [],
+           "aggregateFunctionType": "filter"
+          }
+         ],
+         "functions": [],
+         "aggregateWindow": {
+          "period": "auto"
+         }
+        }
+       }
+      ],
+      "axes": {
+       "x": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       },
+       "y": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       }
+      },
+      "type": "xy",
+      "legend": {},
+      "geom": "line",
+      "colors": [
+       {
+        "id": "01aba4e5-0da8-4c4b-940c-fee873767cf2",
+        "type": "scale",
+        "hex": "#31C0F6",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "25cf7ae5-8879-4120-9985-76bff29714b7",
+        "type": "scale",
+        "hex": "#A500A5",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "7fdfda0a-a469-45ee-9542-b7ca34ea26fe",
+        "type": "scale",
+        "hex": "#FF7E27",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       }
+      ],
+      "note": "",
+      "showNoteWhenEmpty": false,
+      "xColumn": "_time",
+      "yColumn": "_value",
+      "shadeBelow": false,
+      "position": "overlaid",
+      "timeFormat": ""
+     }
+    }
+   },
+   {
+    "type": "view",
+    "id": "05c5ce8cadeb2000",
+    "attributes": {
+     "name": "Infections/Deaths (by Region)",
+     "properties": {
+      "shape": "chronograf-v2",
+      "queries": [
+       {
+        "text": "v.Measurement_Death_Or_Infection\nfrom(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == v.Measurement_Death_Or_Infection)\n  |> filter(fn: (r) => r[\"_field\"] == \"positives\")\n  |> filter(fn: (r) => r[\"region\"] == v.Region)\n  |> group(columns: [\"region\"])\n  |> aggregateWindow(every: 24h, fn: sum)\n  |> yield(name: \"sum\")",
+        "editMode": "advanced",
+        "name": "",
+        "builderConfig": {
+         "buckets": [],
+         "tags": [
+          {
+           "key": "_measurement",
+           "values": [],
+           "aggregateFunctionType": "filter"
+          }
+         ],
+         "functions": [],
+         "aggregateWindow": {
+          "period": "auto"
+         }
+        }
+       }
+      ],
+      "axes": {
+       "x": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       },
+       "y": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "Count",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       }
+      },
+      "type": "xy",
+      "legend": {},
+      "geom": "line",
+      "colors": [
+       {
+        "id": "01aba4e5-0da8-4c4b-940c-fee873767cf2",
+        "type": "scale",
+        "hex": "#31C0F6",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "25cf7ae5-8879-4120-9985-76bff29714b7",
+        "type": "scale",
+        "hex": "#A500A5",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "7fdfda0a-a469-45ee-9542-b7ca34ea26fe",
+        "type": "scale",
+        "hex": "#FF7E27",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       }
+      ],
+      "note": "",
+      "showNoteWhenEmpty": false,
+      "xColumn": "_time",
+      "yColumn": "_value",
+      "shadeBelow": false,
+      "position": "overlaid",
+      "timeFormat": ""
+     }
+    }
+   },
+   {
+    "type": "view",
+    "id": "05c5d031b26b2000",
+    "attributes": {
+     "name": "Collected Strains (All Regions)",
+     "properties": {
+      "shape": "chronograf-v2",
+      "queries": [
+       {
+        "text": "\n  from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"strains\")\n  |> filter(fn: (r) => r[\"_field\"] == \"gisaid\")\n  |> group(columns: [\"region\"])\n  |> aggregateWindow(every: 24h, fn: count)\n  |> yield(name: \"count\")",
+        "editMode": "advanced",
+        "name": "",
+        "builderConfig": {
+         "buckets": [],
+         "tags": [
+          {
+           "key": "_measurement",
+           "values": [],
+           "aggregateFunctionType": "filter"
+          }
+         ],
+         "functions": [],
+         "aggregateWindow": {
+          "period": "auto"
+         }
+        }
+       }
+      ],
+      "axes": {
+       "x": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       },
+       "y": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       }
+      },
+      "type": "xy",
+      "legend": {},
+      "geom": "line",
+      "colors": [
+       {
+        "id": "01aba4e5-0da8-4c4b-940c-fee873767cf2",
+        "type": "scale",
+        "hex": "#31C0F6",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "25cf7ae5-8879-4120-9985-76bff29714b7",
+        "type": "scale",
+        "hex": "#A500A5",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "7fdfda0a-a469-45ee-9542-b7ca34ea26fe",
+        "type": "scale",
+        "hex": "#FF7E27",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       }
+      ],
+      "note": "",
+      "showNoteWhenEmpty": false,
+      "xColumn": "_time",
+      "yColumn": "_value",
+      "shadeBelow": false,
+      "position": "overlaid",
+      "timeFormat": ""
+     }
+    }
+   },
+   {
+    "type": "view",
+    "id": "05c5d2061f2b2000",
+    "attributes": {
+     "name": "Collected Strains (Region)",
+     "properties": {
+      "shape": "chronograf-v2",
+      "queries": [
+       {
+        "text": "\n  from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"strains\")\n  |> filter(fn: (r) => r[\"_field\"] == \"gisaid\")\n  |> filter(fn: (r) => r[\"region\"] == v.Region)\n\n  |> group(columns: [\"region\"])\n  |> aggregateWindow(every: 24h, fn: count)\n  |> yield(name: \"count\")",
+        "editMode": "advanced",
+        "name": "",
+        "builderConfig": {
+         "buckets": [],
+         "tags": [
+          {
+           "key": "_measurement",
+           "values": [],
+           "aggregateFunctionType": "filter"
+          }
+         ],
+         "functions": [],
+         "aggregateWindow": {
+          "period": "auto"
+         }
+        }
+       }
+      ],
+      "axes": {
+       "x": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       },
+       "y": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "Samples",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       }
+      },
+      "type": "xy",
+      "legend": {},
+      "geom": "line",
+      "colors": [
+       {
+        "id": "01aba4e5-0da8-4c4b-940c-fee873767cf2",
+        "type": "scale",
+        "hex": "#31C0F6",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "25cf7ae5-8879-4120-9985-76bff29714b7",
+        "type": "scale",
+        "hex": "#A500A5",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "7fdfda0a-a469-45ee-9542-b7ca34ea26fe",
+        "type": "scale",
+        "hex": "#FF7E27",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       }
+      ],
+      "note": "",
+      "showNoteWhenEmpty": false,
+      "xColumn": "_time",
+      "yColumn": "_value",
+      "shadeBelow": false,
+      "position": "overlaid",
+      "timeFormat": ""
+     }
+    }
+   },
+   {
+    "type": "view",
+    "id": "05c62497bd2f1000",
+    "attributes": {
+     "name": " Auto Mobility (by Region)",
+     "properties": {
+      "shape": "chronograf-v2",
+      "queries": [
+       {
+        "text": "from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"mobility\")\n  |> filter(fn: (r) => r[\"region\"] == v.Region)\n  |> filter(fn: (r) => r[\"type\"] == \"driving\")\n  |> filter(fn: (r) => r[\"geo_type\"] == \"country/region\")",
+        "editMode": "advanced",
+        "name": "",
+        "builderConfig": {
+         "buckets": [],
+         "tags": [
+          {
+           "key": "_measurement",
+           "values": [],
+           "aggregateFunctionType": "filter"
+          }
+         ],
+         "functions": [],
+         "aggregateWindow": {
+          "period": "auto"
+         }
+        }
+       }
+      ],
+      "axes": {
+       "x": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       },
+       "y": {
+        "bounds": [
+         "",
+         ""
+        ],
+        "label": "Count",
+        "prefix": "",
+        "suffix": "",
+        "base": "10",
+        "scale": "linear"
+       }
+      },
+      "type": "xy",
+      "legend": {},
+      "geom": "line",
+      "colors": [
+       {
+        "id": "01aba4e5-0da8-4c4b-940c-fee873767cf2",
+        "type": "scale",
+        "hex": "#31C0F6",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "25cf7ae5-8879-4120-9985-76bff29714b7",
+        "type": "scale",
+        "hex": "#A500A5",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       },
+       {
+        "id": "7fdfda0a-a469-45ee-9542-b7ca34ea26fe",
+        "type": "scale",
+        "hex": "#FF7E27",
+        "name": "Nineteen Eighty Four",
+        "value": 0
+       }
+      ],
+      "note": "",
+      "showNoteWhenEmpty": false,
+      "xColumn": "_time",
+      "yColumn": "_value",
+      "shadeBelow": false,
+      "position": "overlaid",
+      "timeFormat": ""
+     }
+    }
+   },
+   {
+    "type": "view",
+    "id": "05c627a10daf1000",
+    "attributes": {
+     "name": "First Strain Mutation Count (Region)",
+     "properties": {
+      "shape": "chronograf-v2",
+      "type": "scatter",
+      "queries": [
+       {
+        "text": "from(bucket: \"test\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"strains\")\n  |> filter(fn: (r) => r[\"_field\"] == \"mutation_count\")\n // |> filter(fn: (r) => r[\"first_strain\"] == \"1\")\n |> filter(fn: (r) => r[\"_value\"] >= int(v: v.MinMutations))\n |> filter(fn: (r) => r[\"region\"] == v.Region)",
+        "editMode": "advanced",
+        "name": "",
+        "builderConfig": {
+         "buckets": [],
+         "tags": [
+          {
+           "key": "_measurement",
+           "values": [],
+           "aggregateFunctionType": "filter"
+          }
+         ],
+         "functions": [],
+         "aggregateWindow": {
+          "period": "auto"
+         }
+        }
+       }
+      ],
+      "colors": [
+       "#8F8AF4",
+       "#A51414",
+       "#F4CF31"
+      ],
+      "fillColumns": [
+       "region",
+       "country"
+      ],
+      "symbolColumns": [
+       "region",
+       "country"
+      ],
+      "xColumn": "_time",
+      "yColumn": "_value",
+      "xAxisLabel": "Time",
+      "yAxisLabel": "Number of Mutations",
+      "xPrefix": "",
+      "xSuffix": "",
+      "yPrefix": "",
+      "ySuffix": "",
+      "note": "",
+      "showNoteWhenEmpty": false,
+      "timeFormat": "MMMM D, YYYY HH:mm:ss"
+     }
+    }
+   },
+   {
+    "id": "05bb23aeb031e000",
+    "type": "variable",
+    "attributes": {
+     "name": "Measurement_Death_Or_Infection",
+     "arguments": {
+      "type": "map",
+      "values": {
+       "Death Report": "deaths",
+       "Infection Reports": "infections"
+      }
+     },
+     "selected": [
+      "Death Report"
+     ]
+    },
+    "relationships": {
+     "label": {
+      "data": []
+     }
+    }
+   },
+   {
+    "id": "05c5d46875eb2000",
+    "type": "variable",
+    "attributes": {
+     "name": "Region",
+     "arguments": {
+      "type": "map",
+      "values": {
+       "Africa": "Africa",
+       "Asia": "Asia",
+       "Europe": "Europe",
+       "North-America": "North-America",
+       "Oceania": "Oceania",
+       "South-America": "South-America",
+       "none": ""
+      }
+     },
+     "selected": [
+      "Europe"
+     ]
+    },
+    "relationships": {
+     "label": {
+      "data": []
+     }
+    }
+   },
+   {
+    "id": "05c62845682f1000",
+    "type": "variable",
+    "attributes": {
+     "name": "MinMutations",
+     "arguments": {
+      "type": "map",
+      "values": {
+       "0": "0",
+       "1": "1",
+       "2": "2",
+       "3": "3",
+       "5": "5",
+       "10": "10",
+       "15": "15",
+       "20": "20"
+      }
+     },
+     "selected": [
+      "5"
+     ]
+    },
+    "relationships": {
+     "label": {
+      "data": []
+     }
+    }
+   }
+  ]
+ },
+ "labels": []
+}
